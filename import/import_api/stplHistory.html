@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="UTF-8">
+	<title>Import - STPL History</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap-reboot.min.css" type="text/css">
+	<link rel="stylesheet" href="import_api.css" type="text/css">
+	<style type="text/css">
+
+	</style>
+	<script src="api_helpers.js"></script>
+	</head>
+	<body>
+	<h1>Import - STPL History</h1>
+	<div class="stplHistory"></div>
+
+	<script>
+	
+		initStplHistory().catch(console.warn)
+
+		async function initStplHistory() {
+			stplHistory = await loadStplHistory();
+			console.log(stplHistory);
+			showStplHistory(stplHistory)
+		}
+
+		async function loadStplHistory() {
+			return fetch(`/admin/getStplHistory`).then(r=>r.json())
+		}
+
+		async function showStplHistory(history) {
+			let timestamps = extractTimestamps(history)
+			let d = document.querySelector(".stplHistory")
+			for(let v = timestamps.length - 1; v >= 1; v--) {
+				let timestamp = timestamps[v]
+				d.innerHTML += ``
+				let version = history[`stpl_${timestamp}`]
+				let prevVersion = history[`stpl_${timestamps[v-1]}`]
+				let {added, removed} = diffByJson(version, prevVersion)
+				console.log({added, removed});
+				let changes = [...added.map(data=>({action: "+", data})), ...removed.map(data=>({action: "-", data}))]
+				changes.sort((a,b)=>+a.data[0] - b.data[0])
+				d.innerHTML += `<div>
+					<details><summary>${timestampToDate(timestamp)}</summary>
+					<table>${changes.map(c=>`<tr class="action ${c.action === "+" ? "add" : "remove"}"><td>${c.action}</td>${c.data.map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</table>
+					</details></div>`
+				await new Promise(r=>setTimeout(r, 0))
+			}
+		}
+	</script>
+	</body>
+</html>

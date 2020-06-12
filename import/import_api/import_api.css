@@ -1,0 +1,19 @@
+body {
+	padding: 2em;
+	background-color: #334455;
+	color: #cceeff;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+table {color: #000;}
+.added {background-color: #aea;}
+.removed {background-color: #ec9;}
+
+table {font-size: 0.6em;}
+table td {padding: 0 0.5em;}
+
+.action.change {background-color:  #ee8;}
+.action.add,
+.action.readd {background-color:  #afa;}
+.action.invalidate, 
+.action.remove {background-color:  #faa;}

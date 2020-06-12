@@ -1,0 +1,15 @@
+root_data
+sec
+node_modules
+.vscode
+.idea
+cacheSettingsTest
+import/**/x_*
+config/**/x_*
+**/pdf
+**/evento_extractedVersions
+**/stpl_extractedVersions
+**/stplinput_copy/gpp002.txt
+**/data
+**/forClassicImport.json
+

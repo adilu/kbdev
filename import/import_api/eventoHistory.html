@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="UTF-8">
+	<title>Import - Evento History</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap-reboot.min.css" type="text/css">
+	<link rel="stylesheet" href="import_api.css" type="text/css">
+	<style type="text/css">
+
+	</style>
+	<script src="api_helpers.js"></script>
+	</head>
+	<body>
+	<h1>Import - Evento History</h1>
+	<div id="logOutput"></div>
+	<div class="filterfield" contenteditable></div>
+	<table class="merged"></table>
+	<div style="display: flex;">
+		<div class="versions"></div>
+		<div class="diff"></div>
+	</div>
+
+	<script>
+	
+		main().catch(console.warn)
+
+		let lists = {};
+		let timestamps = [];
+		let keys = ["onleave", "noClass", "suslist", "courselist", "susToClass", "susToCourse"]
+		let merged = {};
+
+		async function main() {
+			//let {stplVersions, eventoVersions} = await loadRaw()
+			lists = await loadLists();
+			merged = await loadEventoMerged();
+			console.log({merged});
+			
+			timestamps = extractTimestamps(lists)
+			showVersions(timestamps)
+			showMergeLog()
+		}
+
+		async function loadRaw() {
+			let stplFiles = await fetch(`/admin/getStplVersions`).then(r=>r.json())
+			let eventoFiles = await fetch(`/admin/getEventoVersions`).then(r=>r.json())
+			let stplVersions = await Promise.all(stplFiles.map(f=>{
+				return fetch(`/import/1920/stpl_extractedVersions/${f}`).then(r=>r.text())
+			}))
+			let eventoVersions = await Promise.all(eventoFiles.map(f=>{
+				return fetch(`/import/1920/evento_extractedVersions/${f}`).then(r=>r.json())
+			}))
+			return {stplVersions, eventoVersions}
+		}
+
+		async function loadLists() {
+			return fetch(`/admin/getExtractedLists`).then(r=>r.json())
+		}
+
+		async function loadEventoMerged() {
+			return fetch(`/admin/getEventoMerged`).then(r=>r.json())
+		}
+
+		function showVersions(timestamps) {
+			document.querySelector(".versions").innerHTML = timestamps.map(t=>{
+				return `<div class="version" data-timestamp="${t}">${timestampToDate(t)}</div>`
+			}).join("")
+			document.querySelectorAll(".version").forEach(v=>v.addEventListener("click", e=>{
+				showDifferenceTo(e.target.dataset.timestamp, lists)
+			}))
+		}
+
+		
+		function showMergeLog() {
+			document.querySelector(".merged").innerHTML = merged.logFile.reverse().map(d=>{
+				let v = d.value;
+				if(d.action === "change") {
+					v = v.replace(d.to, `<b title="${d.from}"><span style="text-decoration: line-through; color: red"> ${d.from}</span>${d.to}</b>`)
+					v = v.replace(d.changed, `<b>${d.changed}</b>`)
+				}
+				let obj = JSON.parse(d.value)
+				if(Array.isArray(obj)) {
+					v = displaySus(obj[0]) + " " + (d.key === "susToCourse" ? displayCourse(obj[1]) : obj[1]) + " " + (obj[2] || "")
+				}
+				if(d.action === "change") {
+					v = v.replace(d.to, `<b title="${d.from}"><span style="text-decoration: line-through; color: red"> ${d.from}</span>${d.to}</b>`)
+					v = v.replace(d.changed, `<b>${d.changed}</b>`)
+				}
+				return `<tr class="action ${d.action}">
+					<td>${d.key}</td>
+					<td>${timestampToDate(d.timestamp)}</td>
+					<td>${d.action.slice(0,1)}</td>
+					<td>${v}</td>
+				</tr>`
+			}).join("")
+		}
+
+		function displaySus(sus) {
+			let s = merged.suslist.find(s=>s.sus===sus)
+			return `${s.klasse} ${s.email} (${sus})` 
+		}
+
+		function displayCourse(cid) {
+			let c = merged.courselist.find(c=>c.cid===cid)
+			return `${c.subj} ${c.lp} ${c.klassen} (${cid})` 
+		}
+
+		function showDifferenceTo(timestamp, lists) {
+			console.log(timestamp);
+			
+			let index = timestamps.indexOf(+timestamp)
+			let oldTimestamp = timestamps[index-1]
+			console.log(index, timestamps, oldTimestamp);
+			document.querySelector(".diff").innerHTML = ""
+			if(index > 0) {
+				keys.forEach(k=>{
+					let {added, removed} = diffByJson(lists[`${k}_${timestamp}`], lists[`${k}_${oldTimestamp}`])
+					if(added.length + removed.length === 0) return
+					document.querySelector(".diff").innerHTML += `
+						<h3>${k}</h3>
+						${added.map(entry=>`<div class="added">+ ${entry}</div>`).join("")}
+						${removed.map(entry=>`<div class="removed">- ${entry}</div>`).join("")}
+					`
+				})
+			}
+		}
+	</script>
+	</body>
+</html>

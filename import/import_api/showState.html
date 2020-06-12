@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Import</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap-reboot.min.css" type="text/css">
+<link rel="stylesheet" href="import_api.css" type="text/css">
+<style type="text/css">
+	html {font-size: 14px;}
+	summary>h2 {display: inline-block;}
+</style>
+<script src="api_helpers.js"></script>
+<script src="/config/configPermanent/checkExceptions.js"></script>
+</head>
+
+<body>
+<h1>Import State</h1>
+<div id="logOutput" style="white-space:pre-wrap; font-size: 0.8em; margin: 2em 2em 0 0; overflow:auto;"></div>
+<div>
+	<details open>
+		<summary><h2>Belegungen Semester 2</h2></summary>
+		<div class="warningsS1"></div>
+	</details>
+	<details open>
+		<summary><h2>Belegungen Semester 2</h2></summary>
+		<div class="warningsS2"></div>
+	</details>
+	<details open>
+		<summary><h2>Nur in Evento</h2></summary>
+		<div class="onlyinevento"></div>
+	</details>
+	<details open>
+		<summary><h2>Nur in STPL</h2></summary>
+		<div class="onlyinstpl"></div>
+	</details>
+	<details open>
+		<summary><h2>Mehrere passende Gruppen</h2></summary>
+		<div class="multitable"></div>
+	</details>
+</div>
+
+<script>
+let sj = "1920"
+let SJE = 2020
+
+var script   = document.createElement("script");
+script.type  = "text/javascript";
+script.src   = `/config/${sj}/config.js`;
+document.body.appendChild(script);
+
+let $ = document.querySelector.bind(document)
+
+async function run() {
+	let data = await load(sj)
+	console.log(data);
+	Object.assign(window, data)
+	let {onlyInStpl, onlyInEvento, tooManyCourses} = checkMatchings(data)
+	checkSubjectList(data.suslist, 1)
+	checkSubjectList(data.suslist, 2)
+}
+
+function checkMatchings({courselist, lessons}) {
+	for(let l of lessons) {
+		let courses = courselist.filter(c => matchesCourse(l, c) );
+		l.courses = courses
+		courses.forEach(c=>c.lessons =  (c.lessons || []).concat([l]))
+	}
+	let onlyInStpl = lessons.filter(l=>!l.courses.length)
+	onlyInStpl = onlyInStpl.filter(l=>!isCourseWithAutoGroup(l))
+	let onlyInEvento = courselist.filter(c=>!c.lessons)
+	let tooManyCourses = lessons.filter(l=>l.courses.length>1
+		&& !lessonMayHaveMultipleEventoCourses(l, l.courses))
+	console.log({onlyInStpl, onlyInEvento, tooManyCourses});
+	$(".onlyinstpl").innerHTML = onlyInStpl.map(l=>`<div>${JSON.stringify(l)}</div>`).join("")
+	$(".onlyinevento").innerHTML = onlyInEvento.map(c=>`<div>${JSON.stringify(c)}</div>`).join("")
+	$(".multitable").innerHTML = tooManyCourses.map(l=>`<div>${JSON.stringify(l)}</div>`).join("")
+	return {onlyInStpl, onlyInEvento, tooManyCourses}
+}
+
+function matchesCourse(lesson, course) {
+	let subjMatches = course.subj === lesson.subj || course.subj + "^" === lesson.subj
+	let lpMatches = lesson.lp.includes(course.lp)	
+	let groupMatches = course.klassen.split(" ").some(cl => lesson.klassen.includes(cl)) || lesson.klassen === "IV-I"
+	let semMatches = hasOccurrencesInSem(lesson, course.semester)
+	return subjMatches && lpMatches && groupMatches && semMatches
+}
+
+async function load(sj) {
+	let stpl = await fetch(`/data/${sj}/stpl_current/stpl.json`).then(r=>r.json())
+	let courselist = await fetch(`/data/${sj}/merged/courselist.json`).then(r=>r.json())
+	let suslist = await fetch(`/data/${sj}/merged/suslist.json`).then(r=>r.json())
+	let susToClass = await fetch(`/data/${sj}/merged/susToClass.json`).then(r=>r.json())
+	let susToCourse = await fetch(`/data/${sj}/merged/susToCourse.json`).then(r=>r.json())
+	let lplist = await fetch(`/config/${sj}/lp.json`).then(r=>r.json())
+	let lessons = inflateLessons(stpl, courselist, lplist)
+	lessons = assertTeacher(lessons, lplist)
+	return {lessons, courselist, suslist, susToClass, susToCourse, lplist}
+}
+
+
+
+run()
+
+function adaptSubj(subj) {
+  return subj.replace(/\d$/, "");
+}
+
+function hasOccurrencesInSem(lesson, sem) {
+	return lesson.occ.split("").filter((occ, jsw) => occ==="1" && semOfJSW(jsw) === sem).length
+}
+
+function semOfJSW(jsw) {
+	return jsw <= CONFIG.periods.find(p=>p.short==="S1").last ? 1 : 2
+}
+
+//reinflate @check order in stplworker
+function inflateLessons(rawlessons) {
+	return rawlessons.map(l=>{
+		let [unr, lp, weekday, daylesson, subj, klassen, longroom, starttime, endtime, occ] = l;
+		subj = adaptSubj(subj);
+		return {unr, lp, weekday, daylesson, subj, klassen, longroom, room: longroom.split("~")[0], starttime, endtime, occ};
+	});
+	return lessons;
+}
+
+function assertTeacher(lessons, lplist) {
+	return lessons.filter(l=>{
+		let valid = l.lp.split("~").every(singlelp=>lplist.find(lparr=>lparr[0]===singlelp))
+		if(!valid) console.warn("invalid LP: ", l);
+		return valid
+	})
+}
+
+// function generateStplCourseKeys(lessons) {
+// 	let keys = {}
+// 	lessons.forEach(l=>{
+// 		let key = `${l.unr}-${l.subj}-${l.lp}-${l.klassen}`
+// 		keys[key] = (keys[key] || []).concat([l])
+// 	})
+// 	Object.entries(keys).forEach(([key, lessonarr])=>lessonarr.length > 4 && console.log({key, lessonarr}))
+// 	return keys
+// }
+
+//(sE, E) (B^,C^) have the same UNR
+// function groupByUnr(lessons) {
+// 	let unrs = {}
+// 	lessons.forEach(l=>{
+// 		if(!unrs[l.unr]) {
+// 			unrs[l.unr] = {
+// 				subjs: new Set([l.subj]),
+// 				lps: new Set([l.lp]),
+// 				klassen: new Set([l.klassen]),
+// 				lessons: [l]
+// 			}
+// 		}
+// 		else {
+// 			unrs[l.unr].subjs.add(l.subj)
+// 			unrs[l.unr].lps.add(l.lp)
+// 			unrs[l.unr].klassen.add(l.klassen)
+// 			unrs[l.unr].lessons.push(l)
+// 		}
+// 	})
+// 	Object.entries(unrs).forEach(([unr, item])=>item.subjs.size > 1 && console.log({unr, item, subjs: item.subjs}))
+// 	Object.entries(unrs).forEach(([unr, item])=>item.lps.size > 1 && console.log({unr, item, lps: item.lps}))
+// 	Object.entries(unrs).forEach(([unr, item])=>item.klassen.size > 1 && console.log({unr, item, klassen: item.klassen}))
+// 	return unrs;
+// }
+
+// subj = adaptSubj(subj);
+
+// 		let cids = courselist.filter(c => (c.subj === subj || c.subj + "^" === subj) && lp.includes(c.lp) && (c.klassen.split(" ").some(cl => klassen.includes(cl)) || klassen === "IV-I")).map(c=>c.cid);
+
+
+let mandatorySubjects = {
+	"GYM1": {
+		KS: ["KS"],
+		F: ["F"],
+		M: ["M"],
+		D: ["D"],
+		S3: ["E", "I", "L"],
+		G: ["G", "iG"],
+		GG: ["GG"],
+		C: ["C", "iC"],
+		B: ["B"],
+		Sport: ["SPm", "SPf"],
+		KU: ["BG", "MU"],
+		SPF: ["startsWith", "s"],
+		IN: ["IN"],
+	},
+	"GYM2": {
+		KS: ["KS"],
+		F: ["F"],
+		M: ["M"],
+		D: ["D"],
+		S3: ["E", "I", "L"],
+		G: ["G", "iG"],
+		GG: ["GG"],
+		P: ["P"],
+		C: ["C", "iC"],
+		B: ["B"],
+		Sport: ["SPm", "SPf"],
+		KU: ["BG", "MU"],
+		SPF: ["startsWith", "s"],
+		WR: ["WR", "W", "R"]
+	},
+	"GYM3": {
+		KS: ["KS"],
+		F: ["F"],
+		M: ["M"],
+		D: ["D"],
+		S3: ["E", "I", "L"],
+		G: ["G", "iG"],
+		P: ["P"],
+		C: ["C", "iC"],
+		B: ["B"],
+		Sport: ["SPm", "SPf"],
+		KU: ["BG", "MU"],
+		SPF: ["startsWith", "s"],
+		EF: ["startsWith", "e"],
+	},
+	"GYM4": {
+		KS: ["KS"],
+		F: ["F"],
+		M: ["M"],
+		D: ["D"],
+		S3: ["E", "I", "L"],
+		G: ["G", "iG"],
+		Sport: ["SPm", "SPf"],
+		KU: ["BG", "MU"],
+		SPF: ["startsWith", "s"],
+		EF: ["startsWith", "e"],
+	}
+};
+
+function checkSubjectList(suslist, sem) {
+	let warnings = suslist.map(s => checkIfSusHasEverySubj(s, sem)).filter(x => x.length > 0);
+	document.querySelector(".warnings"+"S"+sem).innerHTML = warnings.map(ws => ws.join("")).join("");
+}
+
+function classToGrade(yyx) {
+	if(isNaN(parseInt(yyx))) {
+		if(["TAL", "IV-I"].includes(yyx)) return "1-4"
+		console.warn("Cannot find grade of " + yyx)
+		return ""
+	}
+	return "" + SJE - 2000 + 4 - parseInt(yyx)
+}
+
+function susValidInSem(s, sem) {
+	let courses = getCoursesOfSus(s)
+	return courses.some(c=>c.semester===sem)
+}
+
+function matchingValidUntilPresent(m) {
+	return !m[2] || m[2].slice(-1)[0] > 0
+}
+
+function getCoursesOfSus(s) {
+	return window.susToCourse.filter(m => m[0] === s.sus).filter(matchingValidUntilPresent).map(m => courselist.find(c => c.cid === m[1]))
+}
+
+function checkIfSusHasEverySubj(s, SEM) {
+	let warnings = [];
+	if(!susValidInSem(s, SEM)) return console.log(`skip ${s.email} Sem${SEM}`) || warnings;
+	let stufe = "GYM" + classToGrade(s.klasse);
+	let maptoerror = (s, text) => `<div class="warning">${s.klasse}: ${s.firstname} ${s.lastname} ${text}</div>`;
+	let courses = getCoursesOfSus(s).filter(c => c.semester === SEM);
+	Object.entries(mandatorySubjects[stufe]).forEach(([group, subjs]) => {
+		let mysubjs;
+		if (subjs[0] === "startsWith") {
+			mysubjs = courses.filter(c => c.subj.startsWith(subjs[1])).map(c=>{c.isMandatory = true; return c;});
+		}
+		else {
+			mysubjs = courses.filter(c => subjs.includes(c.subj)).map(c=>{c.isMandatory = true; return c;});
+		}
+		if (subjs[1] && subjs[1] === "s") {
+			let SPF = mysubjs.map(c => c.subj).join("");
+			if (SPF === "") {
+				warnings.push(maptoerror(s, "hat kein SPF."));
+			}
+			else if (!["sBsC", "sCsB", "sWsR", "sRsW", "sWsRsR", "sRsRsW", "sRsWsR", "sPsAM", "sAMsP", "sPPsPH", "sPHsPP", "sBG", "sMU", "sE", "sS", "sI"].concat(stufe === "GYM3" && SEM === 1 ? ["sW"] : []).includes(SPF)) {
+				warnings.push(maptoerror(s, `hat eine sonderbare SPF Kombination (${mysubjs.map(c => c.subj).join(" ")}).`));
+			}
+		}
+		else {
+			if (mysubjs.length === 0) warnings.push(maptoerror(s, `hat kein ${group}.`));
+			if (mysubjs.length > 1 && !["Splus", "KUplus"].some(k => mysubjs.some(c => c.coursetype.startsWith(k)))) warnings.push(maptoerror(s, `hat zu viele ${group} (${mysubjs.map(c => c.subj).join(" ")}).`));
+		}
+	});
+	//courses.filter(c=>!c.isMandatory).forEach(c=>console.log("not mandatory", c, s));
+	if(warnings.length) console.log(s, courses, window.susToCourse.filter(m => m[0] === s.sus));
+	
+	return warnings;
+}
+
+
+
+</script>
+</body>
+</html>
