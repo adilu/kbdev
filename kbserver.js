@@ -7,6 +7,10 @@ let {adminhandlers} = require("./import/import_api/adminhandlers.js")
 
 const staticOptions = {enableBrotli: true, orderPreference: ["br", "gzip"]}
 
+app.use("/test", async (req, res)=>{
+	const fs = require("fs").promises
+	res.status(200).send(JSON.stringify(await fs.readdir("/data")))
+})
 app.use("/admin", adminhandlers)
 app.use("/stplversions/1920/", expressStaticGzip("./import/1920/stpl_extractedVersions", staticOptions))
 app.use("/import", expressStaticGzip("./import/import_api", staticOptions))
