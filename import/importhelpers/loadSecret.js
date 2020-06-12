@@ -7,7 +7,7 @@ function loadSecret(name, extension=".txt") {
 		return fs.readFileSync(path.join(__dirname, "../../sec", name + extension), {encoding: "UTF-8"})
 	}
 	else {
-		return process.env[name]
+		return process.env[name.replace(/-/g, "_") + (extension !== ".txt" ? "_" + extension.slice(1) : "")]
 	}
 }
 
