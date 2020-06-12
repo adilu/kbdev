@@ -4,7 +4,8 @@
   "description": "",
   "main": "kbserver.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node kbserver.js"
   },
   "keywords": [],
   "author": "info@3e8.ch",
