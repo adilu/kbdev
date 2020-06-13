@@ -38,7 +38,6 @@ async function printPdf(url, saveToPath, iterations = 0) {
 		if(response.statusCode === 200) {
 			return await new Promise((resolve, reject) => {
 				let file = fs.createWriteStream(saveToPath)
-				console.log(1111)
 				response.pipe(file)
 				response.on("end", _=>{
 					console.log("File saved!")
