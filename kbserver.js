@@ -5,6 +5,8 @@ var app = express()
 
 let {adminhandlers} = require("./import/import_api/adminhandlers.js")
 
+console.log(process.getuid ? process.getuid() : "undefined")
+
 const staticOptions = {enableBrotli: true, orderPreference: ["br", "gzip"]}
 
 app.use("/test", async (req, res)=>{
@@ -14,6 +16,7 @@ app.use("/test", async (req, res)=>{
 app.use("/mkdir", async (req, res)=>{
 	const fs = require("fs").promises
 	await fs.mkdir("/data/2021")
+	await fs.writeFile("/data/2021/time.txt", ""+Date.now(), "utf-8")
 	await fs.writeFile("/data/2021/time.txt", ""+Date.now(), "utf-8")
 	res.status(200).send(JSON.stringify(await fs.readdir("/data")))
 })
