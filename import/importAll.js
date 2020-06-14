@@ -14,7 +14,6 @@ const {compressDir} = require("./importhelpers/compressor")
 // const forceUpload = true;
 
 async function importAll(SJ) {
-	console.log(process.getuid ? process.getuid() : "undefined")
 	await fetchStplInputs(SJ)
 	//may be move DatenKB to correct /stpldata/year folder
 	const {newFileFound} = await stplUpdate(SJ)
