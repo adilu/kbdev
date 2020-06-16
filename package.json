@@ -5,7 +5,9 @@
   "main": "kbserver.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node kbserver.js"
+    "start": "node kbserver.js",
+    "dev_view": "snowpack dev",
+    "build": "snowpack build"
   },
   "keywords": [],
   "author": "info@3e8.ch",
@@ -14,9 +16,11 @@
     "basic-ftp": "^4.6.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "express-static-gzip": "^2.0.6"
+    "express-static-gzip": "^2.0.6",
+    "svelte": "^3.23.2"
   },
   "devDependencies": {
     "eslint": "^6.8.0"
-  }
+  },
+  "sourceType": "module"
 }

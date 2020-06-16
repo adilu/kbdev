@@ -94,9 +94,9 @@
 			}).join("")
 		}
 
-		function displaySus(sus) {
-			let s = merged.suslist.find(s=>s.sus===sus)
-			return `${s.klasse} ${s.email} (${sus})` 
+		function displaySus(sid) {
+			let s = merged.suslist.find(s=>s.sid===sid)
+			return `${s.klasse} ${s.email} (${sid})`
 		}
 
 		function displayCourse(cid) {

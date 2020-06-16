@@ -3,6 +3,7 @@ const {readFile, writeFile, copyFile, stat, readdir} = require("fs").promises
 const {printPdf} = require("./importhelpers/printPdf")
 const {overwriteIfChanged} = require("./importhelpers/overwriteIfChanged")
 const path = require("path")
+const {getDatehelpers} = require("../config/configPermanent/getDatehelpers.js")
 
 // const {stplAdaptions} = require(PATHS.importSettings)
 // const {adaptStplCourses} = require(PATHS.temporaryImportRules)
@@ -21,14 +22,14 @@ async function stplExtract(SJ) {
 	let versions = await loadVersions(SJ)
 	let arrayOfLessons = await extractLessons(versions, SJ)
 	let lplist = JSON.parse(await readFile(PATHS.getLpList(SJ), "UTF-8"))
-	let hasChanged = await overwriteIfChanged(PATHS.getStplCurrent(SJ), JSON.stringify(arrayOfLessons))
+	let hasChanged = await overwriteIfChanged(PATHS.getStplCurrentFile(SJ), JSON.stringify(arrayOfLessons))
 	console.log(hasChanged ? "Import finished." : "No changes to import.")
 	console.log(`${arrayOfLessons.length} lessons in DB.`)
 	return hasChanged
 	// if(hasChanged) {
 	//   console.log(`Import finshed, ${arrayOfLessons.length} lessons found.`);
 	//   try {
-	//     await printPdfs(sj);
+	//     await printPdfs(SJ);
 	//   }
 	//   catch(e) {console.log(`Currently no print (proxy?)`);}
 	// }
@@ -57,7 +58,7 @@ async function extractLessons(versions, SJ) {
 }
 
 async function loadInstances(versions, SJ) {
-	const {getWeek, getWeekYear, weekArray, getJSW} = require(PATHS.getDatehelpers(SJ))
+	const {getWeek, getWeekYear, weekArray, getJSW} = getDatehelpers(SJ)
 	let instances = []
 	let validFrom = await Promise.all(versions.map((v,i)=>{
 		let created = + v.split(".")[0].split("_")[1]
@@ -125,7 +126,7 @@ function groupInstances(groupedClasses) {
 }
 
 function groupOccurrences(groupedInstances, SJ) {
-	const {weekArray, semOfJSW} = require(PATHS.getDatehelpers(SJ))
+	const {weekArray, semOfJSW} = getDatehelpers(SJ)
 	const lessons = {}
 	const emptyOccString = weekArray.map(_=>"0").join("")
 	Object.values(groupedInstances).forEach(i=>{

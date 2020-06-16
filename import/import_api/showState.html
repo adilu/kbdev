@@ -40,18 +40,26 @@
 </div>
 
 <script>
-let sj = "1920"
-let SJE = 2020
+let SJ = "1920"
 
-var script   = document.createElement("script");
-script.type  = "text/javascript";
-script.src   = `/config/${sj}/config.js`;
-document.body.appendChild(script);
+function addScript(path) {
+	var script   = document.createElement("script");
+	script.type  = "text/javascript";
+	script.src   = path;
+	document.body.appendChild(script);
+}
+
+addScript(`/config/${SJ}/config.js`)
+addScript(`/config/configPermanent/getDatehelpers.js`)
+
+let datehelpers
 
 let $ = document.querySelector.bind(document)
 
 async function run() {
-	let data = await load(sj)
+	await new Promise(r=>{setTimeout(r, 500)})
+	datehelpers = getDatehelpers(SJ)
+	let data = await load(SJ)
 	console.log(data);
 	Object.assign(window, data)
 	let {onlyInStpl, onlyInEvento, tooManyCourses} = checkMatchings(data)
@@ -60,11 +68,14 @@ async function run() {
 }
 
 function checkMatchings({courselist, lessons}) {
+	console.log("check M");
 	for(let l of lessons) {
+		console.log(l);
 		let courses = courselist.filter(c => matchesCourse(l, c) );
 		l.courses = courses
 		courses.forEach(c=>c.lessons =  (c.lessons || []).concat([l]))
 	}
+	console.log("l done");
 	let onlyInStpl = lessons.filter(l=>!l.courses.length)
 	onlyInStpl = onlyInStpl.filter(l=>!isCourseWithAutoGroup(l))
 	let onlyInEvento = courselist.filter(c=>!c.lessons)
@@ -85,13 +96,13 @@ function matchesCourse(lesson, course) {
 	return subjMatches && lpMatches && groupMatches && semMatches
 }
 
-async function load(sj) {
-	let stpl = await fetch(`/data/${sj}/stpl_current/stpl.json`).then(r=>r.json())
-	let courselist = await fetch(`/data/${sj}/merged/courselist.json`).then(r=>r.json())
-	let suslist = await fetch(`/data/${sj}/merged/suslist.json`).then(r=>r.json())
-	let susToClass = await fetch(`/data/${sj}/merged/susToClass.json`).then(r=>r.json())
-	let susToCourse = await fetch(`/data/${sj}/merged/susToCourse.json`).then(r=>r.json())
-	let lplist = await fetch(`/config/${sj}/lp.json`).then(r=>r.json())
+async function load(SJ) {
+	let stpl = await fetch(`/data/${SJ}/stpl_current/stpl.json`).then(r=>r.json())
+	let courselist = await fetch(`/data/${SJ}/merged/courselist.json`).then(r=>r.json())
+	let suslist = await fetch(`/data/${SJ}/merged/suslist.json`).then(r=>r.json())
+	let susToClass = await fetch(`/data/${SJ}/merged/susToClass.json`).then(r=>r.json())
+	let susToCourse = await fetch(`/data/${SJ}/merged/susToCourse.json`).then(r=>r.json())
+	let lplist = await fetch(`/config/${SJ}/lp.json`).then(r=>r.json())
 	let lessons = inflateLessons(stpl, courselist, lplist)
 	lessons = assertTeacher(lessons, lplist)
 	return {lessons, courselist, suslist, susToClass, susToCourse, lplist}
@@ -106,12 +117,12 @@ function adaptSubj(subj) {
 }
 
 function hasOccurrencesInSem(lesson, sem) {
-	return lesson.occ.split("").filter((occ, jsw) => occ==="1" && semOfJSW(jsw) === sem).length
+	return lesson.occ.split("").filter((occ, jsw) => occ==="1" && datehelpers.semOfJSW(jsw) === sem).length
 }
 
-function semOfJSW(jsw) {
-	return jsw <= CONFIG.periods.find(p=>p.short==="S1").last ? 1 : 2
-}
+// function semOfJSW(jsw) {
+// 	return jsw <= CONFIG.periods.find(p=>p.short==="S1").last ? 1 : 2
+// }
 
 //reinflate @check order in stplworker
 function inflateLessons(rawlessons) {
@@ -243,6 +254,7 @@ function classToGrade(yyx) {
 		console.warn("Cannot find grade of " + yyx)
 		return ""
 	}
+	const SJE = getDatehelpers(SJ)
 	return "" + SJE - 2000 + 4 - parseInt(yyx)
 }
 
@@ -256,7 +268,7 @@ function matchingValidUntilPresent(m) {
 }
 
 function getCoursesOfSus(s) {
-	return window.susToCourse.filter(m => m[0] === s.sus).filter(matchingValidUntilPresent).map(m => courselist.find(c => c.cid === m[1]))
+	return window.susToCourse.filter(m => m[0] === s.sid).filter(matchingValidUntilPresent).map(m => courselist.find(c => c.cid === m[1]))
 }
 
 function checkIfSusHasEverySubj(s, SEM) {
@@ -288,7 +300,7 @@ function checkIfSusHasEverySubj(s, SEM) {
 		}
 	});
 	//courses.filter(c=>!c.isMandatory).forEach(c=>console.log("not mandatory", c, s));
-	if(warnings.length) console.log(s, courses, window.susToCourse.filter(m => m[0] === s.sus));
+	if(warnings.length) console.log(s, courses, window.susToCourse.filter(m => m[0] === s.sid));
 	
 	return warnings;
 }

@@ -3,9 +3,10 @@ const path = require("path")
 const {readFile, readdir} = require("fs").promises
 const {overwriteIfChanged} = require("./importhelpers/overwriteIfChanged")
 const {loadExtractedLists} = require("./importhelpers/loadData")
+const {getDatehelpers} = require("../config/configPermanent/getDatehelpers")
 
 async function eventoMerge(SJ) {
-	const {semOfJSW} = require(PATHS.getDatehelpers(SJ))
+	const {semOfJSW} = getDatehelpers(SJ)
 	let lists = await loadExtractedLists(SJ)
 	let timestamps = extractTimestamps(lists)
 	let validFrom = getValidFrom(timestamps, SJ)
@@ -123,7 +124,7 @@ function addAfter(object, jsw) {
 }
 
 function extractPrimary(entry, key) {
-	return Array.isArray(entry) ? JSON.stringify(entry.slice(0,2)) : (entry.cid || entry.sus)   
+	return Array.isArray(entry) ? JSON.stringify(entry.slice(0,2)) : (entry.cid || entry.sid)
 }
 
 function extractState(entry) {
@@ -137,7 +138,7 @@ function getKeys(lists) {
 }
 
 function getValidFrom(timestamps, SJ) {
-	const {getWeek, getWeekYear, weekArray} = require(PATHS.getDatehelpers(SJ))
+	const {getWeek, getWeekYear, weekArray} = getDatehelpers(SJ)
 	return timestamps.map((timestamp, index)=>{
 		//Änderungen ab Freitag gelten ab nächster Woche
 		const validStart = new Date(+timestamp + 3*86400000)

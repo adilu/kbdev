@@ -1,6 +1,6 @@
 function normalizeSoft(eventoEntry) {
 	let {
-		"Person | Id": sus,
+		"Person | Id": sid,
 		"Person | Nachname": lastname,
 		"Person | Vorname1": firstname,
 		"Person | Anmeldungen_Alle_AusbildungStudienjahrgang": classfield,
@@ -15,7 +15,7 @@ function normalizeSoft(eventoEntry) {
 		...rest
 	} = eventoEntry
 
-	if(!sus) sus = pk2
+	if(!sid) sid = pk2
 
 	classfield = classfield || ""
 	teacherfield = teacherfield || ""
@@ -34,7 +34,7 @@ function normalizeSoft(eventoEntry) {
 		console.warn({objHasUnknownProperties: rest})
 	}
 
-	return {sus, lastname, firstname, classfield, courseDescription, cid, teacherfield, email, status, statusId, pk2, ...rest}
+	return {sid, lastname, firstname, classfield, courseDescription, cid, teacherfield, email, status, statusId, pk2, ...rest}
 
 }
 

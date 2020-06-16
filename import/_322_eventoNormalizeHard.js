@@ -4,7 +4,7 @@ function normalizeHard(eventoEntry, SJE, lplist) {
 		return SJE%2000 + 4 - parseInt(XXa) 
 	}
 
-	let {sus, lastname, firstname, classfield,
+	let {sid, lastname, firstname, classfield,
 		courseDescription, cid, teacherfield,
 		email, status, /*statusId, pk2, ...rest*/} = eventoEntry
 	
@@ -78,7 +78,7 @@ function normalizeHard(eventoEntry, SJE, lplist) {
 		}
 	}
 
-	return ({cid, subj, lp, klassen, coursetype, semester, sus, email, firstname, lastname, klasse, isonleave})
+	return ({cid, subj, lp, klassen, coursetype, semester, sid, email, firstname, lastname, klasse, isonleave})
 }
 
 module.exports = {normalizeHard}

@@ -1,8 +1,29 @@
-async function getDatehelpers(SJ) {
+function getDatehelpers(SJ) {
 
-	const SJA = 2000 + SJ.slice(0,2)
-	const SJE = 2000 + SJ.slice(2,4)
-	const periods = {} //LOAD
+	const SJA = 2000 + parseInt(SJ.slice(0,2))
+	const SJE = 2000 + parseInt(SJ.slice(2,4))
+
+	const periods = [
+		{
+			short: "S1",
+			name: "1. Semester",
+			show: true,
+			first: 0,
+			last: 19
+		},{
+			short: "S2",
+			name: "2. Semester",
+			show: SJE <= 2020,
+			first: 20,
+			last: 39
+		},{
+			short: "OP",
+			name: "ohne Primen",
+			show: SJE <= 2020,
+			first: 31,
+			last: 39
+		}
+	]
 
 	const starttimes = ["07:30", "08:20", "09:15", "10:15", "11:10", "12:05", "13:00", "13:55", "14:50", "15:45", "16:40"]
 	const endtimes   = ["08:15", "09:05", "10:00", "11:00", "11:55", "12:50", "13:45", "14:40", "15:35", "16:30", "17:25"]
@@ -56,6 +77,14 @@ async function getDatehelpers(SJ) {
 
 	function getJSW(week, weekyear) {
 		return weekArray.findIndex(w=>w.year === weekyear && w.week === week)
+	}
+
+	function getJSWfromDate(MMDD) {
+		let p = MMDD.split(".")
+		let month = +p[1]
+		let day = +p[0]
+		let date = new Date(month > 7 ? SJA : SJE, month-1, day)
+		return getJSW(getWeek(date), getWeekYear(date))
 	}
 
 	function getTimeFromJSWday(jsw, weekday) {
@@ -113,14 +142,17 @@ async function getDatehelpers(SJ) {
 	const beautify = (time) => String(time).slice(0,-2) + ":" + String(time).slice(-2)
 
 	return {
+		SJ, SJA, SJE,
 		weekArray,
 		starttimes, endtimes,
 		weekdays, weekdaysLong,
 		isVacation,
 		getWeek, getWeekYear,
-		getJSW, getTimeFromJSWday,
+		getJSW, getTimeFromJSWday, getJSWfromDate,
 		getDateOfISOWeek,
-		getLektionsgrenzeFromTime, timeToDDMM, timeToYYYYMMDD, outOfBounds, semOfJSW, getDateToShow, switchWeek, beautify
+		getLektionsgrenzeFromTime,
+		timeToDDMM, timeToYYYYMMDD,
+		outOfBounds, semOfJSW, getDateToShow, switchWeek, beautify
 	}
 }
 
@@ -128,9 +160,9 @@ async function getDatehelpers(SJ) {
 
 // Support Node.js specific `module.exports` (which can be a function)
 if (typeof module !== "undefined" && module.exports) {
-	exports = module.exports = getDatehelpers
+	exports = module.exports = {getDatehelpers}
 }
 // But always support CommonJS module 1.1.1 spec (`exports` cannot be a function)
 if (typeof exports !== "undefined") {
-	exports.MyModule = getDatehelpers
+	exports.MyModule = {getDatehelpers}
 }

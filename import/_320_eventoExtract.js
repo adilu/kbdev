@@ -46,7 +46,7 @@ async function handleEventoData(SJ) {
 
 	}
 
-	//versions.forEach((v, i) => {if(i%5==0) v.suslist = v.suslist.filter(s=>s.sus!=4459)})
+	//versions.forEach((v, i) => {if(i%5==0) v.suslist = v.suslist.filter(s=>s.sid!=4459)})
 
 	let timestamps = versions.map(v=>v.timestamp)
 	let latestVersion = versions[versions.length - 1]
@@ -62,7 +62,7 @@ async function handleEventoData(SJ) {
 		let v = versions[i]
 		for(let sus of v.suslist) {
 			
-			let existing = suslist.find(s=>s.sus === sus.sus)
+			let existing = suslist.find(s=>s.sid === sus.sid)
 			if(!existing) {
 				suslist.push(Object.assign(sus, {end: [v.timestamp]}))
 			}
@@ -71,7 +71,7 @@ async function handleEventoData(SJ) {
 			}
 		}
 		for(let sus of suslist) {
-			let wasThere = v.suslist.find(s=>s.sus === sus.sus)
+			let wasThere = v.suslist.find(s=>s.sid === sus.sid)
 			if(!wasThere && (!sus.start || (sus.end && sus.start.length < sus.end.length))) {
 				sus.start = [v.timestamp, ...(sus.start||[])]
 			}
@@ -80,7 +80,7 @@ async function handleEventoData(SJ) {
 
 	// let haveFilesChanged = [
 	// 	await updateFile("courses", courselist),
-	// 	await updateFile("sus", suslist),
+	// 	await updateFile("sid", suslist),
 	// 	await updateFile("matchings", susToCourse)
 	// ].some(hasChanged=>hasChanged==true)
 
@@ -92,8 +92,8 @@ async function handleEventoData(SJ) {
 }
 
 function extractVersion(normalizedInscriptions) {
-	let mapToSus = ({sus, email, firstname, lastname, klasse}) => ({sus, email, firstname, lastname, klasse})
-	let uniqueSus = (s,i,a) => a.findIndex(t=>t.sus===s.sus) === i
+	let mapToSus = ({sid, email, firstname, lastname, klasse}) => ({sid, email, firstname, lastname, klasse})
+	let uniqueSus = (s,i,a) => a.findIndex(t=>t.sid===s.sid) === i
 	let onleave = normalizedInscriptions.filter(i=>i.isonleave).map(mapToSus).filter(uniqueSus)
 	let noClass = normalizedInscriptions.filter(i=>!i.klasse).map(mapToSus).filter(uniqueSus)
 
@@ -112,23 +112,23 @@ function extractVersion(normalizedInscriptions) {
 
 		//if(skipEventoCourse(r)) continue
 
-		let {cid, subj, lp, klassen, coursetype, semester, sus, email, firstname, lastname, klasse} = r
+		let {cid, subj, lp, klassen, coursetype, semester, sid, email, firstname, lastname, klasse} = r
 
-		if(!suslist.find(s=>s.sus === r.sus)) {
-			suslist.push({sus, email, firstname, lastname, klasse})
-			susToClass.push([sus, klasse])
+		if(!suslist.find(s=>s.sid === r.sid)) {
+			suslist.push({sid, email, firstname, lastname, klasse})
+			susToClass.push([sid, klasse])
 		}
 
 		let exists = courselist.find(c=>c.cid === r.cid)
 		if(exists && (exists.subj !== subj || exists.lp !== lp || exists.klassen !== klassen)) {console.warn(`Collision of cid!? ${JSON.stringify(exists)} ${cid} ${lp} ${subj} ${klassen}`)}
 		exists || courselist.find(c=>c.cid === r.cid) || courselist.push({cid, subj, lp, klassen, coursetype, semester})
-		susToCourse.push([sus, cid])
+		susToCourse.push([sid, cid])
 	}
 
-	let sortchain = s => `${s.klasse} ${s.lastname} ${s.firstname} ${s.sus}`.toLocaleLowerCase()
+	let sortchain = s => `${s.klasse} ${s.lastname} ${s.firstname} ${s.sid}`.toLocaleLowerCase()
 	suslist.sort((a,b)=> sortchain(a).localeCompare(sortchain(b)))
 
-	susToCourse.sort((a,b)=> suslist.findIndex(s=>s.sus===a[0]) - suslist.findIndex(s=>s.sus===b[0]) )
+	susToCourse.sort((a,b)=> suslist.findIndex(s=>s.sid===a[0]) - suslist.findIndex(s=>s.sid===b[0]) )
 
 	return {onleave, noClass, suslist, courselist, susToClass, susToCourse}
 }

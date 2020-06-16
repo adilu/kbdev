@@ -27,15 +27,19 @@ async function importAll(SJ) {
 	// await compressDir(PATHS.getStplRaw(SJ))
 	// await compressDir(PATHS.getEventoRaw(SJ))
 	await printStplPdfs(SJ)
+
+	await compressDir(PATHS.getEventoMergedData(SJ))
+	await compressDir(PATHS.getStplCurrent(SJ))
+	await compressDir(PATHS.getPdfPath(SJ))
 	// if(uploadChanges && (hasStplChanged || haveFilesChanged || hasChanged || forceUpload)) {
-	// 	await copyData(sj);
+	// 	await copyData(SJ);
 	// 	try {
-	// 		await printStplPdfs(sj);
+	// 		await printStplPdfs(SJ);
 	// 	}
 	// 	catch(e) {console.log(`Currently no print (proxy?)`);}
 	// }
 	// if(uploadChanges) {
-	// 	await moveDevToProduction(sj);
+	// 	await moveDevToProduction(SJ);
 	// }
 }
 

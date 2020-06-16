@@ -31,6 +31,8 @@ app.use("/import", expressStaticGzip("./import/import_api", staticOptions))
 app.use("/data", cors(corsOptions), expressStaticGzip(PATHS.root_data, staticOptions))
 app.use("/config", cors(corsOptions), expressStaticGzip("./config", staticOptions))
 app.use("/cacheSettingsTest", cors(corsOptions), expressStaticGzip("./cacheSettingsTest", staticOptions))
+app.use("/", expressStaticGzip("./build", staticOptions))
+
 //app.use("/", expressStaticGzip("./", staticOptions));
 
 //app.use("/admin", proxy('http://localhost:12222'))

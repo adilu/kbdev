@@ -1,8 +1,8 @@
 const SJ = process.argv[2]
+const {importAll} = require("./importAll")
 
 if(["1920"].includes(SJ)) {
 	console.log(SJ)
-	const {importAll} = require("./importAll")
 	importAll(SJ)
 }
 else {

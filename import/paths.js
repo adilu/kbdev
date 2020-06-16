@@ -21,14 +21,15 @@ const PATHS = {
 }
 
 PATHS.getConfigOfYear = (SJ) => path.join(PATHS.projectRoot, "config", SJ)
-PATHS.getDatehelpers = (SJ) => path.join(PATHS.getConfigOfYear(SJ), "Datehelpers.js")
+//PATHS.getDatehelpers = (SJ) => path.join(PATHS.getConfigOfYear(SJ), "Datehelpers.js")
 PATHS.getDataPathOfYear = (SJ) => path.join(PATHS.root_data, SJ)
 PATHS.getEventoRaw = (SJ) => path.join(PATHS.root_data, SJ, "evento_raw")
 PATHS.getEventoExtracts = (SJ) => path.join(PATHS.root_data, SJ, "evento_extracts")
 PATHS.getEventoMergedData = (SJ) => path.join(PATHS.root_data, SJ, "merged")
 PATHS.getStplRaw = (SJ) => path.join(PATHS.root_data, SJ, "stpl_raw")
 PATHS.getStplRawLatestCopy = (SJ) => path.join(PATHS.root_data, SJ, "stpl_raw_latest_copy")
-PATHS.getStplCurrent = (SJ) => path.join(PATHS.root_data, SJ, "stpl_current", "stpl.json")
+PATHS.getStplCurrent = (SJ) => path.join(PATHS.root_data, SJ, "stpl_current")
+PATHS.getStplCurrentFile = (SJ) => path.join(PATHS.root_data, SJ, "stpl_current", "stpl.json")
 PATHS.getStplExtracts = (SJ) => path.join(PATHS.root_data, SJ, "stpl_extracts")
 PATHS.getLpList = (SJ) => path.join(PATHS.getConfigOfYear(SJ), "lp.json")
 PATHS.getPdfPath = (SJ) => path.join(PATHS.root_data, SJ, "pdf")

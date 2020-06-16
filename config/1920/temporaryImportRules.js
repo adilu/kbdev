@@ -1,6 +1,6 @@
-const {SJA, SJE, periods} = require("./config.js")
 const PATHS = require("../../import/paths")
-const {semOfJSW} = require("./Datehelpers.js")
+const {getDatehelpers} = require("../configPermanent/getDatehelpers.js")
+const {semOfJSW, SJE} = getDatehelpers(__dirname.slice(-4))
 const {Rule} = require("../../import/Rule.js")
 const verbose = process.platform.startsWith("win")
 
