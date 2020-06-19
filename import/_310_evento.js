@@ -5,6 +5,7 @@ const fs = require("fs")
 const {colors} = require("./importhelpers/colors")
 const {parseBody, request, logStatusCode} = require("./importhelpers/requesthelpers")
 const PATHS = require("./paths")
+const {createFolderIfNotExists} = require("./importhelpers/createFolderIfNotExists")
 const {readdir, readFile, writeFile} = fs.promises
 const {normalizeSoft} = require("./_312_eventoNormalizeSoft")
 const {loadSecret} = require("./importhelpers/loadSecret.js")
@@ -61,6 +62,7 @@ async function fetchEventoApi(SJ, onlyTest = false)  {
 	robj.Result.sort((a,b) => a.PK2*1e12+a.PK1 - (b.PK2*1e12+b.PK1))
 	let normalized = robj.Result.map(o=>normalizeSoft(o))
 	const PATHTOEXTRACTED = PATHS.getEventoRaw(SJ)
+	createFolderIfNotExists(PATHTOEXTRACTED)
 	let resultstring = JSON.stringify(normalized, null, "  ")
 	let extracted = await readdir(PATHTOEXTRACTED)
 	let newest = extracted.filter(f=>f.endsWith(".json")&&f.startsWith("evento_")).sort().reverse()[0]

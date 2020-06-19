@@ -2,6 +2,7 @@ const fs = require("fs")
 const {loadSecret} = require("./loadSecret.js")
 const NOENCRYPT = false
 const https = require(NOENCRYPT ? "http" : "https")
+const {createFolderIfNotExists} = require("./createFolderIfNotExists")
 
 async function postToPdfify(path, data) {
 	const jsonObject = JSON.stringify(data)
@@ -37,6 +38,7 @@ async function printPdf(url, saveToPath, iterations = 0) {
 		const response = await postToPdfify("/html2pdf", data)
 		if(response.statusCode === 200) {
 			return await new Promise((resolve, reject) => {
+				createFolderIfNotExists(saveToPath)
 				let file = fs.createWriteStream(saveToPath)
 				response.pipe(file)
 				response.on("end", _=>{

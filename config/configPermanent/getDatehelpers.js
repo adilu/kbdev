@@ -103,7 +103,7 @@ function getDatehelpers(SJ) {
 		return jsw <= periods.find(p=>p.short==="S1").last ? 1 : 2
 	}
 
-	function getLektionsgrenzeFromTime(time) {
+	function getLessonBoundaryFromTime(time) {
 		return 1+0.5*Math.floor(2*(Math.floor(time/100)+(time%100)/60-8.3333+0.25)/0.92)
 	}
 
@@ -143,14 +143,14 @@ function getDatehelpers(SJ) {
 
 	return {
 		SJ, SJA, SJE,
-		weekArray,
+		weekArray, periods,
 		starttimes, endtimes,
 		weekdays, weekdaysLong,
 		isVacation,
 		getWeek, getWeekYear,
 		getJSW, getTimeFromJSWday, getJSWfromDate,
 		getDateOfISOWeek,
-		getLektionsgrenzeFromTime,
+		getLessonBoundaryFromTime,
 		timeToDDMM, timeToYYYYMMDD,
 		outOfBounds, semOfJSW, getDateToShow, switchWeek, beautify
 	}

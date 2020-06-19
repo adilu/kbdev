@@ -1,4 +1,5 @@
 const {readFile, writeFile} = require("fs").promises
+const {createFolderIfNotExists} = require("./createFolderIfNotExists.js")
 
 /**
  * 
@@ -10,6 +11,7 @@ async function overwriteIfChanged(filepath, content) {
 	let hasChanged = content !== oldContent
 	
 	if(hasChanged) {
+		createFolderIfNotExists(filepath)
 		await writeFile(filepath, content)
 	}
 	return hasChanged

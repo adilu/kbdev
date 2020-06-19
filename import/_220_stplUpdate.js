@@ -1,9 +1,10 @@
 const {readFile, writeFile, readdir} = require("fs").promises
-
+const {createFolderIfNotExists} = require("./importhelpers/createFolderIfNotExists.js")
 const PATHS = require("./paths")
 
 async function stplUpdate(SJ) {
 	const PATHTOEXTRACTED = PATHS.getStplRaw(SJ)
+	createFolderIfNotExists(PATHTOEXTRACTED)
 	let extracted = await readdir(PATHTOEXTRACTED)
 	let newest = extracted.filter(f=>f.endsWith(".txt")&&f.startsWith("extracted_")).sort().reverse()[0]
 	let newestContent = newest ? await readFile(PATHTOEXTRACTED + "/" + newest, "UTF-8") : ""

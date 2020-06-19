@@ -2,7 +2,6 @@ const PATHS = require("./paths")
 const path = require("path")
 const {readFile, readdir} = require("fs").promises
 const {overwriteIfChanged} = require("./importhelpers/overwriteIfChanged")
-
 const {normalizeHard} = require("./_322_eventoNormalizeHard")
 //const {adaptEventoCourse, skipEventoCourse, /*adaptEventoSubj,*/ SJA, SJE} = require(PATHS.importSettings)
 const {eventoAdaptions} = require("../config/configPermanent/eventoAdaptions")
@@ -27,7 +26,7 @@ async function handleEventoData(SJ) {
 		v.timestamp = + v.file.split(".")[0].split("_")[1]
 		console.groupCollapsed(`extracting ${v.timestamp}`)
 
-		let entries = JSON.parse(await readFile(PATHTOEXTRACTED + "/" + v.file))
+		let entries = JSON.parse(await readFile(PATHTOEXTRACTED + "/" + v.file, "utf-8"))
 		let normalizedInscriptions = entries.map(o=>normalizeHard(o, SJE, lplist)).filter(l=>l!==null)
 
 		eventoAdaptions.forEach(rule=>normalizedInscriptions = rule.check(normalizedInscriptions))
