@@ -100,11 +100,9 @@ function groupClasses(instances) {
 	instances.forEach(i=>{
 		let {lp, unr, subj, weekday, daylesson, starttime, endtime, longroom, jsw, klassen} = i
 		let uniqueCode = [lp, unr, subj, weekday, daylesson, starttime, endtime, longroom, jsw].join("_")
-		if(groupedClasses[uniqueCode]) {
+		groupedClasses[uniqueCode] = groupedClasses[uniqueCode] || i
+		if(!groupedClasses[uniqueCode].klassen.includes(klassen)) {
 			groupedClasses[uniqueCode].klassen += " "+klassen
-		}
-		else {
-			groupedClasses[uniqueCode] = i
 		}
 	})
 	return groupedClasses
@@ -115,11 +113,9 @@ function groupInstances(groupedClasses) {
 	Object.values(groupedClasses).forEach(i=>{
 		let {lp, unr, subj, weekday, daylesson, starttime, endtime, longroom, jsw, klassen} = i
 		let uniqueCode = [unr, subj, weekday, daylesson, starttime, endtime, longroom, jsw, klassen.replace(/\s/g, "")].join("_")
-		if(groupedInstances[uniqueCode]) {
+		groupedInstances[uniqueCode] = groupedInstances[uniqueCode] || i
+		if(!groupedInstances[uniqueCode].lp.includes(lp)) {
 			groupedInstances[uniqueCode].lp += "~"+lp
-		}
-		else {
-			groupedInstances[uniqueCode] = i
 		}
 	})
 	return groupedInstances
@@ -145,16 +141,15 @@ function groupOccurrences(groupedInstances, SJ) {
 }
 
 async function printPdfs(SJ) {
+	const {periods} = getDatehelpers(SJ)
 	const URL = `https://klassenbuch.gymburgdorf.ch/stundenplan/${SJ}`
-	await printPdf(`${URL}?print=lp&period=S1`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_L_S1.pdf"))
-	await printPdf(`${URL}?print=lp&period=S2`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_L_S2.pdf"))
-	await printPdf(`${URL}?print=lp&period=OP`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_L_OP.pdf"))
-	await printPdf(`${URL}?print=klassen&period=S1`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_K_S1.pdf"))
-	await printPdf(`${URL}?print=klassen&period=S2`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_K_S2.pdf"))
-	await printPdf(`${URL}?print=klassen&period=OP`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_K_OP.pdf"))
-	await printPdf(`${URL}?print=room&period=S1`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_R_S1.pdf"))
-	await printPdf(`${URL}?print=room&period=S2`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_R_S2.pdf"))
-	await printPdf(`${URL}?print=room&period=OP`, path.join(PATHS.getPdfPath(SJ), "Stundenplan_R_OP.pdf"))
+	for(let p of periods) {
+		if(p.show) {
+			await printPdf(`${URL}?print=lp&period=${p.short}`, path.join(PATHS.getPdfPath(SJ), `Stundenplan_L_${p.short}.pdf`))
+			await printPdf(`${URL}?print=klassen&period=${p.short}`, path.join(PATHS.getPdfPath(SJ), `Stundenplan_K_${p.short}.pdf`))
+			await printPdf(`${URL}?print=room&period=${p.short}`, path.join(PATHS.getPdfPath(SJ), `Stundenplan_R_${p.short}.pdf`))
+		}
+	}
 }
 
 module.exports = {loadInstances: loadVersions, prepareLessons: extractLessons, stplExtract, extractHistory, printStplPdfs: printPdfs}
