@@ -1,5 +1,5 @@
 const ftp = require("basic-ftp")
-const {loadSecret} = require("./loadSecret.js")
+const {loadSecret} = require("../../isomorphic/loadSecret.js")
 
 async function ftpsClient(remotepath, isTest = false) {
 	const client = new ftp.Client()

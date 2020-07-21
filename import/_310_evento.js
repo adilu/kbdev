@@ -8,13 +8,13 @@ const PATHS = require("./paths")
 const {createFolderIfNotExists} = require("./importhelpers/createFolderIfNotExists")
 const {readdir, readFile, writeFile} = fs.promises
 const {normalizeSoft} = require("./_312_eventoNormalizeSoft")
-const {loadSecret} = require("./importhelpers/loadSecret.js")
+const {loadSecret} = require("../isomorphic/loadSecret.js")
 let where = process.argv[2] && process.argv[2].includes("test") ? "test" : "production"
 let isTest = false
 
 const URL = where === "test" ? "evento-test.erz.be.ch" : "evento.erz.be.ch"
-const user = where === "test" ? loadSecret("evento_user_test") : loadSecret("evento_user")
-const PW = where === "test" ? loadSecret("evento_pw_test") : loadSecret("evento_pw")
+const user = loadSecret("evento_user")
+const PW = loadSecret("evento_pw")
 
 const Mandant = "GymBurgdorf"
 const clientId= "Burgdorf"

@@ -1,5 +1,5 @@
 const fs = require("fs")
-const {loadSecret} = require("./loadSecret.js")
+const {loadSecret} = require("../../isomorphic/loadSecret.js")
 const NOENCRYPT = false
 const https = require(NOENCRYPT ? "http" : "https")
 const {createFolderIfNotExists} = require("./createFolderIfNotExists")
