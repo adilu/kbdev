@@ -5,7 +5,7 @@ body {
 	font-family: 'Courier New', Courier, monospace;
 }
 
-table {color: #000;}
+table {color: #000; background-color: #ccc}
 .added {background-color: #aea;}
 .removed {background-color: #ec9;}
 

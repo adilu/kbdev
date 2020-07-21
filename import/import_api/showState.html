@@ -18,7 +18,7 @@
 <div id="logOutput" style="white-space:pre-wrap; font-size: 0.8em; margin: 2em 2em 0 0; overflow:auto;"></div>
 <div>
 	<details open>
-		<summary><h2>Belegungen Semester 2</h2></summary>
+		<summary><h2>Belegungen Semester 1</h2></summary>
 		<div class="warningsS1"></div>
 	</details>
 	<details open>
@@ -34,13 +34,18 @@
 		<div class="onlyinstpl"></div>
 	</details>
 	<details open>
+		<summary><h2>Only Teacher Change</h2></summary>
+		<div class="onlyteacherchange"></div>
+	</details>
+	<details open>
 		<summary><h2>Mehrere passende Gruppen</h2></summary>
 		<div class="multitable"></div>
 	</details>
 </div>
 
 <script>
-let SJ = "1920"
+let SJ = "2021"
+let sem2ready = false
 
 function addScript(path) {
 	var script   = document.createElement("script");
@@ -62,29 +67,41 @@ async function run() {
 	let data = await load(SJ)
 	console.log(data);
 	Object.assign(window, data)
-	let {onlyInStpl, onlyInEvento, tooManyCourses} = checkMatchings(data)
+	let {onlyInStpl, onlyInEvento, tooManyCourses} = checkMergeEvontoStpl(data)
 	checkSubjectList(data.suslist, 1)
-	checkSubjectList(data.suslist, 2)
+	if(sem2ready) checkSubjectList(data.suslist, 2)
 }
 
-function checkMatchings({courselist, lessons}) {
-	console.log("check M");
+function checkMergeEvontoStpl({courselist, lessons}) {
 	for(let l of lessons) {
-		console.log(l);
 		let courses = courselist.filter(c => matchesCourse(l, c) );
 		l.courses = courses
 		courses.forEach(c=>c.lessons =  (c.lessons || []).concat([l]))
 	}
-	console.log("l done");
 	let onlyInStpl = lessons.filter(l=>!l.courses.length)
-	onlyInStpl = onlyInStpl.filter(l=>!isCourseWithAutoGroup(l))
+	onlyInStpl = onlyInStpl.filter(l=>!isCourseWithAutoGroup(l)).filter(l=>sem2ready || hasOccurrencesInSem(l, 1))
 	let onlyInEvento = courselist.filter(c=>!c.lessons)
 	let tooManyCourses = lessons.filter(l=>l.courses.length>1
 		&& !lessonMayHaveMultipleEventoCourses(l, l.courses))
-	console.log({onlyInStpl, onlyInEvento, tooManyCourses});
-	$(".onlyinstpl").innerHTML = onlyInStpl.map(l=>`<div>${JSON.stringify(l)}</div>`).join("")
-	$(".onlyinevento").innerHTML = onlyInEvento.map(c=>`<div>${JSON.stringify(c)}</div>`).join("")
-	$(".multitable").innerHTML = tooManyCourses.map(l=>`<div>${JSON.stringify(l)}</div>`).join("")
+	let onlyTeacherChange = onlyInStpl.map(l=>{
+		let candidate = onlyInEvento.find(c=>c.subj===l.subj&&c.klassen===l.klassen&&hasOccurrencesInSem(l, c.semester))
+		if(candidate) {
+			onlyInStpl = onlyInStpl.filter(s=>!(s.subj===l.subj&&s.klassen===l.klassen&&hasOccurrencesInSem(s, candidate.semester)))
+			onlyInEvento = onlyInEvento.filter(s=>s!==candidate)
+		}
+		return candidate && {subj: l.subj, klassen: l.klassen, sem: candidate.semester, LpStpl: l.lp, lpEvento: candidate.lp, l, c: candidate}
+	}).filter(x=>!!x)
+	console.log({onlyInStpl, onlyInEvento, onlyTeacherChange, tooManyCourses});
+
+	const displayAsTable = arr => {
+		const mapAsRow = arr => `<tr>${arr.map(text=>`<td>${text}</td>`).join("")}</tr>`
+		let keys = Object.keys(arr[0]||{});
+		return `<table>${mapAsRow(keys)}${arr.map(l=>mapAsRow(keys.map(k=>l[k]))).join("")}</table>`
+	}
+	$(".onlyinstpl").innerHTML = displayAsTable(onlyInStpl)
+	$(".onlyinevento").innerHTML = displayAsTable(onlyInEvento)
+	$(".onlyteacherchange").innerHTML = displayAsTable(onlyTeacherChange)
+	$(".multitable").innerHTML = displayAsTable(tooManyCourses)
 	return {onlyInStpl, onlyInEvento, tooManyCourses}
 }
 
@@ -240,6 +257,7 @@ let mandatorySubjects = {
 		KU: ["BG", "MU"],
 		SPF: ["startsWith", "s"],
 		EF: ["startsWith", "e"],
+		SK: ["SK"]
 	}
 };
 
@@ -254,8 +272,8 @@ function classToGrade(yyx) {
 		console.warn("Cannot find grade of " + yyx)
 		return ""
 	}
-	const SJE = getDatehelpers(SJ)
-	return "" + SJE - 2000 + 4 - parseInt(yyx)
+	const SJE = datehelpers.SJE
+	return "" + (SJE - 2000 + 4 - parseInt(yyx))
 }
 
 function susValidInSem(s, sem) {
@@ -290,7 +308,7 @@ function checkIfSusHasEverySubj(s, SEM) {
 			if (SPF === "") {
 				warnings.push(maptoerror(s, "hat kein SPF."));
 			}
-			else if (!["sBsC", "sCsB", "sWsR", "sRsW", "sWsRsR", "sRsRsW", "sRsWsR", "sPsAM", "sAMsP", "sPPsPH", "sPHsPP", "sBG", "sMU", "sE", "sS", "sI"].concat(stufe === "GYM3" && SEM === 1 ? ["sW"] : []).includes(SPF)) {
+			else if (!["sBsC", "sCsB", "sWsR", "sRsW", "sWsRsR", "sRsRsW", "sRsWsR", "sPsAM", "sAMsP", "sPPsPH", "sPHsPP", "sBG", "sMU", "sE", "sS", "sI", "sL"].concat(stufe === "GYM3" && SEM === 1 ? ["sW"] : []).includes(SPF)) {
 				warnings.push(maptoerror(s, `hat eine sonderbare SPF Kombination (${mysubjs.map(c => c.subj).join(" ")}).`));
 			}
 		}
@@ -300,7 +318,7 @@ function checkIfSusHasEverySubj(s, SEM) {
 		}
 	});
 	//courses.filter(c=>!c.isMandatory).forEach(c=>console.log("not mandatory", c, s));
-	if(warnings.length) console.log(s, courses, window.susToCourse.filter(m => m[0] === s.sid));
+	if(warnings.length) console.log(warnings, s, courses, window.susToCourse.filter(m => m[0] === s.sid));
 	
 	return warnings;
 }
