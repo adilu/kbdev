@@ -12,6 +12,7 @@ table {color: #000; background-color: #ccc}
 table {font-size: 0.6em;}
 table td {padding: 0 0.5em;}
 
+.action {color: #222;}
 .action.change {background-color:  #ee8;}
 .action.add,
 .action.readd {background-color:  #afa;}

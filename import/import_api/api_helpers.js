@@ -1,5 +1,5 @@
 function extractTimestamps(lists) {
-	return [...new Set(Object.keys(lists).map(v=>+v.split("_")[1]))]
+	return [...new Set(Object.keys(lists).map(v=>+v.split("_")[1]))].sort()
 }
 
 function timestampToDate(timestamp) {

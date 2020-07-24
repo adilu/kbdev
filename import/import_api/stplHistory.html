@@ -19,9 +19,9 @@
 		initStplHistory().catch(console.warn)
 
 		async function initStplHistory() {
-			stplHistory = await loadStplHistory();
+			let stplHistory = window.stplHistory = await loadStplHistory();
 			console.log(stplHistory);
-			showStplHistory(stplHistory)
+			await showStplHistory(stplHistory)
 		}
 
 		async function loadStplHistory() {

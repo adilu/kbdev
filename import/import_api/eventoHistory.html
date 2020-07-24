@@ -40,17 +40,17 @@
 			showMergeLog()
 		}
 
-		async function loadRaw() {
-			let stplFiles = await fetch(`/admin/getStplVersions`).then(r=>r.json())
-			let eventoFiles = await fetch(`/admin/getEventoVersions`).then(r=>r.json())
-			let stplVersions = await Promise.all(stplFiles.map(f=>{
-				return fetch(`/import/1920/stpl_extractedVersions/${f}`).then(r=>r.text())
-			}))
-			let eventoVersions = await Promise.all(eventoFiles.map(f=>{
-				return fetch(`/import/1920/evento_extractedVersions/${f}`).then(r=>r.json())
-			}))
-			return {stplVersions, eventoVersions}
-		}
+		// async function loadRaw() {
+		// 	let stplFiles = await fetch(`/admin/getStplVersions`).then(r=>r.json())
+		// 	let eventoFiles = await fetch(`/admin/getEventoVersions`).then(r=>r.json())
+		// 	let stplVersions = await Promise.all(stplFiles.map(f=>{
+		// 		return fetch(`/import/1920/stpl_extractedVersions/${f}`).then(r=>r.text())
+		// 	}))
+		// 	let eventoVersions = await Promise.all(eventoFiles.map(f=>{
+		// 		return fetch(`/import/1920/evento_extractedVersions/${f}`).then(r=>r.json())
+		// 	}))
+		// 	return {stplVersions, eventoVersions}
+		// }
 
 		async function loadLists() {
 			return fetch(`/admin/getExtractedLists`).then(r=>r.json())
@@ -61,15 +61,14 @@
 		}
 
 		function showVersions(timestamps) {
-			document.querySelector(".versions").innerHTML = timestamps.map(t=>{
-				return `<div class="version" data-timestamp="${t}">${timestampToDate(t)}</div>`
+			document.querySelector(".versions").innerHTML = timestamps.slice(0).reverse().map(t=>{
+				return `<details class="version" data-timestamp="${t}">
+					<summary>${timestampToDate(t)}</summary>
+					<description >${showDifferenceTo(t, lists)}</description>
+				</details>`
 			}).join("")
-			document.querySelectorAll(".version").forEach(v=>v.addEventListener("click", e=>{
-				showDifferenceTo(e.target.dataset.timestamp, lists)
-			}))
 		}
 
-		
 		function showMergeLog() {
 			document.querySelector(".merged").innerHTML = merged.logFile.reverse().map(d=>{
 				let v = d.value;
@@ -94,35 +93,101 @@
 			}).join("")
 		}
 
-		function displaySus(sid) {
-			let s = merged.suslist.find(s=>s.sid===sid)
-			return `${s.klasse} ${s.email} (${sid})`
+		function displayValue(v) {
+			if(v.sid) return displaySus(v)
+			if(v.cid) return displayCourse(v)
+			if(typeof v[0] === "number" && typeof v[1] === "number") return displaySus(v[0]) + " - " + displayCourse(v[1])
+			if(typeof v[0] === "number" && typeof v[1] === "string") return displaySus(v[0]) + " - " + v[1]
+			return JSON.stringify(v)
 		}
 
-		function displayCourse(cid) {
-			let c = merged.courselist.find(c=>c.cid===cid)
-			return `${c.subj} ${c.lp} ${c.klassen} (${cid})` 
+		function showActions({changed, added, removed, readded}) {
+			let result = ""
+			changed.forEach(c=>{
+				result += `<div class="action change">c ${displayValue(c.now)}</div>`
+				Object.keys(c.now).filter(k=>c.existing[k] !== c.now[k]).forEach(k=>{
+					result += `<div class="action change">&nbsp;&nbsp;${k}: ${c.now[k]} (<span style="text-decoration: line-through; color: red">${c.existing[k]}</span>)</div>`
+				})
+			});
+			added.concat(readded).forEach(c=>{
+				result += `<div class="action add">+ ${displayValue(c)}</div>`
+			})
+			removed.forEach(c=>{
+				result += `<div class="action remove">- ${displayValue(c)}</div>`
+			})
+			return result
+		}
+
+		function displaySus(sOrSid) {
+			let s = typeof sOrSid === "number" ? merged.suslist.find(s=>s.sid===sOrSid) : sOrSid
+			return s ? `${s.klasse} ${s.email} (${s.sid})` : sOrSid
+		}
+
+		function displayCourse(cOrCid) {
+			let c = typeof cOrCid === "number" ? merged.courselist.find(c=>c.cid===cOrCid) : cOrCid
+			return c ? `${c.subj} ${c.lp} ${c.klassen} (${c.cid})` : cOrCid
 		}
 
 		function showDifferenceTo(timestamp, lists) {
-			console.log(timestamp);
-			
 			let index = timestamps.indexOf(+timestamp)
 			let oldTimestamp = timestamps[index-1]
-			console.log(index, timestamps, oldTimestamp);
-			document.querySelector(".diff").innerHTML = ""
+			let result = ""
 			if(index > 0) {
 				keys.forEach(k=>{
-					let {added, removed} = diffByJson(lists[`${k}_${timestamp}`], lists[`${k}_${oldTimestamp}`])
-					if(added.length + removed.length === 0) return
-					document.querySelector(".diff").innerHTML += `
-						<h3>${k}</h3>
-						${added.map(entry=>`<div class="added">+ ${entry}</div>`).join("")}
-						${removed.map(entry=>`<div class="removed">- ${entry}</div>`).join("")}
-					`
+					console.log(diffLists(lists[`${k}_${oldTimestamp}`], lists[`${k}_${timestamp}`]));
+					let actions = diffLists(lists[`${k}_${oldTimestamp}`], lists[`${k}_${timestamp}`])
+					if(Object.values(actions).some(a=>a.length>0)) {
+						result += `<h3>${k}</h3>`
+						result += showActions(actions)
+					}
 				})
 			}
+			return result
 		}
+
+
+		function diffLists(merged, current, key) {
+			let oldPrimaries = merged.map(extractPrimary)
+			let currentPrimaries = current.map(extractPrimary)
+			let oldIndex = {}; oldPrimaries.forEach((v,i)=>oldIndex[v] = i)
+			let currentIndex = {}; currentPrimaries.forEach((v,i)=>currentIndex[v] = i)
+			let oldState = merged.map(extractState)
+			let currentState = current.map(extractState)
+			let added = current.filter(entry=>oldIndex[extractPrimary(entry)] === undefined)
+			let readded = merged.filter(entry=>!currentlyValid(entry)).filter(entry=>{
+				return currentIndex[extractPrimary(entry)] >= 0 && entry
+			})
+			let removed = merged.filter(entry=>currentIndex[extractPrimary(entry)] === undefined)
+			let changed = Array.isArray(current[0]) ? [] : current.map(entry=>{
+				let hasIdenticalEntry = oldState.indexOf(extractState(entry)) >= 0
+				if(!hasIdenticalEntry) {
+					let index = oldPrimaries.indexOf(extractPrimary(entry))
+					return index > -1 && {now: entry, existing: merged[index]}
+				}
+				return false
+			}).filter(x=>!!x)
+			return {added, removed, changed, readded}
+		}
+
+		function currentlyValid(object) {
+			let validPeriod = getValidArray(object)
+			return validPeriod.length === 0 || validPeriod[validPeriod.length - 1] > 0
+		}
+
+		function getValidArray(object) {
+			return Array.isArray(object) ? object[2] || [] : object.validPeriod || []
+		}
+
+		function extractPrimary(entry, key) {
+			return Array.isArray(entry) ? JSON.stringify(entry.slice(0,2)) : (entry.cid || entry.sid)
+		}
+
+		function extractState(entry) {
+			return Array.isArray(entry)
+				? JSON.stringify(entry.slice(0,2))
+				: JSON.stringify(Object.keys(entry).filter(k=>k!=="validPeriod"&&k!=="alias").reduce((o,n)=>{o[n]=entry[n]; return o}, {}))
+		}
+
 	</script>
 	</body>
 </html>

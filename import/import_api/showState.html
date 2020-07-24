@@ -8,6 +8,7 @@
 <style type="text/css">
 	html {font-size: 14px;}
 	summary>h2 {display: inline-block;}
+	table {font-size: 0.9em;}
 </style>
 <script src="api_helpers.js"></script>
 <script src="/config/configPermanent/checkExceptions.js"></script>
@@ -41,6 +42,10 @@
 		<summary><h2>Mehrere passende Gruppen</h2></summary>
 		<div class="multitable"></div>
 	</details>
+	<details open>
+		<summary><h2>Nicht übereinstimmende Klassen</h2></summary>
+		<div class="differentgroup"></div>
+	</details>
 </div>
 
 <script>
@@ -72,7 +77,7 @@ async function run() {
 	if(sem2ready) checkSubjectList(data.suslist, 2)
 }
 
-function checkMergeEvontoStpl({courselist, lessons}) {
+function checkMergeEvontoStpl({courselist, lessons, susToCourse, suslist}) {
 	for(let l of lessons) {
 		let courses = courselist.filter(c => matchesCourse(l, c) );
 		l.courses = courses
@@ -91,7 +96,25 @@ function checkMergeEvontoStpl({courselist, lessons}) {
 		}
 		return candidate && {subj: l.subj, klassen: l.klassen, sem: candidate.semester, LpStpl: l.lp, lpEvento: candidate.lp, l, c: candidate}
 	}).filter(x=>!!x)
-	console.log({onlyInStpl, onlyInEvento, onlyTeacherChange, tooManyCourses});
+	let differentClasses = []
+	let eqSet = (a,b) => a.size === b.size && [...a].every(el=>b.has(el))
+	for(let c of courselist) {
+		let coursegroup = new Set(c.klassen.split(" "))
+		let susOfCourse = susToCourse.filter(m=>m[1]===c.cid).map(m=>suslist.find(s=>s.sid===m[0]))
+		let susgroup = new Set(susOfCourse.map(s=>s.klasse))
+		if(!eqSet(coursegroup, susgroup)) {
+			differentClasses.push({subj: c.subj, lp: c.lp, sus: Array.from(susgroup).join(" "), evento: c.klassen, stpl: ""})
+		}
+	}
+	for(let l of lessons) {
+		let stplgroup = new Set(l.klassen.split(" "))
+		let coursegroups = new Set(l.courses.map(c=>c.klassen.split(" ")).reduce((o,n)=>[...n, ...o], []))
+		if(!eqSet(coursegroups, stplgroup) && coursegroups.size !== 0 && l.subj !== "SK"
+			&& !differentClasses.some(obj=>obj.lp === l.lp && obj.subj === l.subj && obj.stpl === l.klassen)) {
+			differentClasses.push({subj: l.subj, lp: l.lp, sus: "", evento: Array.from(coursegroups).join(" "), stpl: l.klassen})
+		}
+	}
+	console.log({onlyInStpl, onlyInEvento, onlyTeacherChange, tooManyCourses, differentClasses});
 
 	const displayAsTable = arr => {
 		const mapAsRow = arr => `<tr>${arr.map(text=>`<td>${text}</td>`).join("")}</tr>`
@@ -102,6 +125,7 @@ function checkMergeEvontoStpl({courselist, lessons}) {
 	$(".onlyinevento").innerHTML = displayAsTable(onlyInEvento)
 	$(".onlyteacherchange").innerHTML = displayAsTable(onlyTeacherChange)
 	$(".multitable").innerHTML = displayAsTable(tooManyCourses)
+	$(".differentgroup").innerHTML = displayAsTable(differentClasses)
 	return {onlyInStpl, onlyInEvento, tooManyCourses}
 }
 
@@ -318,7 +342,7 @@ function checkIfSusHasEverySubj(s, SEM) {
 		}
 	});
 	//courses.filter(c=>!c.isMandatory).forEach(c=>console.log("not mandatory", c, s));
-	if(warnings.length) console.log(warnings, s, courses, window.susToCourse.filter(m => m[0] === s.sid));
+	//if(warnings.length) console.log(warnings, s, courses, window.susToCourse.filter(m => m[0] === s.sid));
 	
 	return warnings;
 }
