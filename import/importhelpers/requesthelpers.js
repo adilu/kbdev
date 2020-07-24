@@ -22,7 +22,9 @@ async function request(reqoptions, body = null) {
 			let data = await parseBody(response)
 			resolve(data)
 		})
-		req.on("error", console.error)
+		req.on("error", error => {
+			reject(error)
+		})
 		if(body) req.write(body)
 		req.end()
 	})
