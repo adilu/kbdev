@@ -1,4 +1,4 @@
 const {stplExtract, extractHistory} = require("./_230_stplExtract")
 
-//run from 1920 etc folder
-extractHistory(process.cwd().slice(-4)).then(x=>console.log("Done."))
+const SJ = process.argv[2]
+extractHistory(SJ).then(x=>console.log("Done."))
