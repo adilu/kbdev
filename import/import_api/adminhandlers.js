@@ -5,7 +5,7 @@ const {loadExtractedLists, loadEventoMerged, loadStplHistory} = require("../impo
 
 // process.chdir( __dirname )
 
-const SJ = "1920"
+const SJ = "2021"
 
 let tasks = {
 	getStplVersions,
