@@ -2,7 +2,7 @@ const PATHS = require("../../import/paths")
 const {getDatehelpers} = require("../configPermanent/getDatehelpers.js")
 const {semOfJSW, SJE} = getDatehelpers(__dirname.slice(-4))
 const {Rule} = require("../../import/Rule.js")
-const verbose = process.platform.startsWith("win")
+const verbose = true // process.platform.startsWith("win")
 
 const adaptEventoCourses = [
 	//addPartnerCourse({semester: 1, original: {subj: "sR", lp: "kr"}, classIncludes:"20", partner: {lp: "cf"}}),
@@ -17,8 +17,10 @@ const adaptEventoCourses = [
 	adaptLP({original: {subj: "KS"}, classIncludes:"21d", newLp: "bi~em"}),
 	adaptLP({original: {subj: "KS"}, classIncludes:"21a", newLp: "ha~mj"}),
 	//new Rule({name: "sS remove group", remove: true, matchByObj: {lp: "", subj: "sS"}, replaceByObj: {lp: "kn", cid: 15349, klassen: "23d 23f"}}),
+	new Rule({name: "change names Malenchini", matchByObj: {firstname: "Julia", lastname: "Malenchini"}, replaceByObj: {firstname: "Max"}})
 ]
 
+let allGYM4cache = null
 const adaptStplCourses = [
 	adaptLP({original: {subj: "fH"}, newLp: "dm"}),
 	adaptLP({original: {subj: "KS"}, classIncludes:"21f",  newLp: "we~js"}),
@@ -27,7 +29,7 @@ const adaptStplCourses = [
 	setKlassen({subj: "KS", lp: "bi"}, "21d"),
 	new Rule({name: "add SK groups", matchByObj: {subj: "SK", klassen: ""},
 		replaceByFunction: (entry, list)=>{
-			let allGYM4 = [...new Set(list.map(l=>l.klassen.split(" ")[0]))].filter(k=>+k.slice(0,2)===SJE%1000).sort().join(" ")
+			let allGYM4 = allGYM4cache = allGYM4cache || [...new Set(list.map(l=>l.klassen.split(" ")[0]))].filter(k=>+k.slice(0,2)===SJE%1000).sort().join(" ")
 			return Object.assign(entry, {klassen: allGYM4})
 		}}),
 	new Rule({name: "remove LT", matchByObj: {subj: "LT"}, remove: true}),
