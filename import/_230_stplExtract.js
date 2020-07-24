@@ -9,10 +9,10 @@ const {getDatehelpers} = require("../config/configPermanent/getDatehelpers.js")
 // const {adaptStplCourses} = require(PATHS.temporaryImportRules)
 
 async function extractHistory(SJ) {
-	let versions = await loadVersions()
+	let versions = await loadVersions(SJ)
 	for(let i = 0; i < versions.length; i++) {
 		let versionset = versions.slice(0, i+1)
-		let arrayOfLessons = await extractLessons(versionset)
+		let arrayOfLessons = await extractLessons(versionset, SJ)
 		let name = versions[i].match(/extracted_(\d+)\.txt$/)[1]
 		await overwriteIfChanged(path.join(PATHS.getStplExtracts(SJ), `stpl_${name}.json`), JSON.stringify(arrayOfLessons))
 	}
@@ -25,6 +25,10 @@ async function stplExtract(SJ) {
 	let hasChanged = await overwriteIfChanged(PATHS.getStplCurrentFile(SJ), JSON.stringify(arrayOfLessons))
 	console.log(hasChanged ? "Import finished." : "No changes to import.")
 	console.log(`${arrayOfLessons.length} lessons in DB.`)
+	if(hasChanged) {
+		let name = versions[versions.length-1].match(/extracted_(\d+)\.txt$/)[1]
+		await overwriteIfChanged(path.join(PATHS.getStplExtracts(SJ), `stpl_${name}.json`), JSON.stringify(arrayOfLessons))
+	}
 	return hasChanged
 	// if(hasChanged) {
 	//   console.log(`Import finshed, ${arrayOfLessons.length} lessons found.`);
@@ -45,10 +49,11 @@ async function extractLessons(versions, SJ) {
 	console.log(instances.length + " instances ready")
 
 	const {adaptStplCourses} = require(path.join(PATHS.getConfigOfYear(SJ), "temporaryImportRules.js"))
-	adaptStplCourses.forEach(rule=>instances = rule.check(instances))
-	adaptStplCourses.forEach(rule=>rule.log())
-
-	await new Promise(r=>setTimeout(r, 2000))
+	adaptStplCourses.forEach(rule=>{
+		instances = rule.check(instances)
+		rule.log()
+	})
+	await new Promise(r=>setTimeout(r, 200))
 	let groupedClasses = groupClasses(instances)
 	let groupedInstances = groupInstances(groupedClasses)
 	let lessons = groupOccurrences(groupedInstances, SJ)
