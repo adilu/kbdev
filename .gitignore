@@ -1,6 +1,7 @@
 root_data
 sec
 node_modules
+**/node_modules
 .vscode
 .idea
 cacheSettingsTest
