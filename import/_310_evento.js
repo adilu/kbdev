@@ -22,7 +22,9 @@ const secret = loadSecret("gymBsecr")
 const scope = ""
 
 const CERTKEY = loadSecret("evento-oauth-protected-erz-be-ch", ".key")
+//const CERTKEY2 = loadSecret("cert_key_string", ".txt")
 const CERT = loadSecret("evento-oauth-protected-erz-be-ch", ".crt")
+//const CERT2 = loadSecret("cert_string", ".txt")
 let clxvalue = ""
 
 const options = {
