@@ -79,11 +79,20 @@ async function fetchEventoApi(SJ, onlyTest = false)  {
 
 async function authClient() {
 	console.log("Connect to GymBurgdorf OAuth Client")
-	let data = await request(options)
-	let obj = JSON.parse(data)
-	let clientToken = obj.access_token
-	//console.log(colors.fg.White, `Client_Token: ${clientToken.slice(0,20)}...`, colors.Reset);
-	return clientToken
+	let data
+	try {
+		data = await request(options)
+		let obj = JSON.parse(data)
+		let clientToken = obj.access_token
+		//console.log(colors.fg.White, `Client_Token: ${clientToken.slice(0,20)}...`, colors.Reset);
+		return clientToken
+	}
+	catch(e) {
+		console.warn(e)
+		console.log(data)
+		throw new Error("Connection failed.")
+	}
+
 }
 async function authUser(clientToken) {
 	console.log("\n")
