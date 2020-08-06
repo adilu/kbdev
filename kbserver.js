@@ -5,6 +5,7 @@ const app = express()
 const cors = require("cors")
 
 const PATHS = require("./import/paths")
+const {loadCalendarData} = require("./import/loadCalendarData")
 
 let {adminhandlers} = require("./import/import_api/adminhandlers.js")
 let {auth2_handlers} = require("./auth/auth2_handlers.js")
@@ -46,4 +47,7 @@ app.use("/", (req, res) => {res.send(`<DOCTYPE HTML><html><body><img src="https:
 const PORT = 11300
 app.listen(PORT)
 console.log(`KB server running on ${11300}`)
+
+loadCalendarData()
+setInterval(loadCalendarData, 60*60*1000)
 

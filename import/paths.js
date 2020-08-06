@@ -33,6 +33,8 @@ PATHS.getStplCurrentFile = (SJ) => path.join(PATHS.root_data, SJ, "stpl_current"
 PATHS.getStplExtracts = (SJ) => path.join(PATHS.root_data, SJ, "stpl_extracts")
 PATHS.getLpList = (SJ) => path.join(PATHS.getConfigOfYear(SJ), "lp.json")
 PATHS.getPdfPath = (SJ) => path.join(PATHS.root_data, SJ, "pdf")
+PATHS.getCalendarPath = (SJ) => path.join(PATHS.root_data, SJ, "calendarData")
+PATHS.join = path.join.bind(path)
 //PATHS.getDatehelpers = (SJ) => path.join(__dirname, "stplinput_copy", "Datehelpers.js")
 
 // PATHS.lp = path.join(PATHS.data, "lp.json")
