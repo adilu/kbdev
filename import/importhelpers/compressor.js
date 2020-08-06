@@ -45,8 +45,7 @@ async function compressDir(path) {
 		let statGz = fs.existsSync(p + ".gz") && await fsProm.stat(p + ".gz")
 		let statBr = fs.existsSync(p + ".br") && await fsProm.stat(p + ".br")
 		if(+stat.mtime !== +statGz.mtime || +stat.mtime !== +statBr.mtime) {
-			await createGzip(p)
-			await createBrotli(p)
+			await compress(p)
 		}
 	}
 }
