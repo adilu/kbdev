@@ -1,5 +1,12 @@
 function getDatehelpers(SJ) {
 
+	if(!SJ || SJ === "currentYear") {
+		let d = new Date()
+		let y = d.getFullYear() % 2000
+		let m = d.getMonth() + 1
+		SJ = m <= 7 ? "" + (y-1) + y : "" + y + (y+1)
+	}
+
 	const SJA = 2000 + parseInt(SJ.slice(0,2))
 	const SJE = 2000 + parseInt(SJ.slice(2,4))
 
