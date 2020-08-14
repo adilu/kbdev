@@ -17,7 +17,7 @@ const adaptEventoCourses = [
 	adaptLP({original: {subj: "KS"}, classIncludes:"21d", newLp: "bi~em"}),
 	adaptLP({original: {subj: "KS"}, classIncludes:"21a", newLp: "ha~mj"}),
 	//new Rule({name: "sS remove group", remove: true, matchByObj: {lp: "", subj: "sS"}, replaceByObj: {lp: "kn", cid: 15349, klassen: "23d 23f"}}),
-	new Rule({name: "change names Malenchini", matchByObj: {firstname: "Julia", lastname: "Malenchini"}, replaceByObj: {firstname: "Max"}})
+	new Rule({name: "change names Malenchini", matchByObj: {firstname: "Julia", lastname: "Malenchini"}, replaceByObj: {firstname: "Max", klasse: "22d"}})
 ]
 
 let allGYM4cache = null
