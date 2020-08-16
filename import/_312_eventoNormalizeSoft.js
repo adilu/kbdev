@@ -1,4 +1,5 @@
 function normalizeSoft(eventoEntry) {
+	//console.log(eventoEntry)
 	let {
 		"Person | Id": sid,
 		"Person | Nachname": lastname,

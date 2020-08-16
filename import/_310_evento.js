@@ -55,12 +55,15 @@ async function fetchEventoApi(SJ, onlyTest = false)  {
 	// result.Result.slice(-7).forEach(r=>console.log(colors.fg.White, `${r.Nachname} ${r.Vorname}, ${r.AdresseOrt}`, colors.Reset))
 
 	let pamask = JSON.parse(await prepareQuery(clxvalue, "personenAnmeldung/Export_Klassenbuch"))
-	//console.log(pamask);
+	//console.log(pamask)
 	pamask.SearchFields.find(s=>s.FieldId === "Status").SearchText = "aA.Angemeldet"
 	let result = await executeQuery(clxvalue, pamask)
 	//console.log(result);
 	let robj = JSON.parse(result)
 	robj.Result = robj.Result.filter(entry => !entry["Anlass | AnlassNr"] || !entry["Anlass | AnlassNr"].match(/-MP\d\d-/)) //exclude Matura exam
+	if(robj.Result.filter(p => !p["Person | Id"]).length > 50) {
+		throw new Error("Evento 'Person | Id' missing")
+	}
 	robj.Result.sort((a,b) => a.PK2*1e12+a.PK1 - (b.PK2*1e12+b.PK1))
 	let normalized = robj.Result.map(o=>normalizeSoft(o))
 	const PATHTOEXTRACTED = PATHS.getEventoRaw(SJ)
