@@ -1,7 +1,6 @@
 function normalizeSoft(eventoEntry) {
-	//console.log(eventoEntry)
 	let {
-		"Person | Id": sid,
+		"Person | Id1": sid,
 		"Person | Nachname": lastname,
 		"Person | Vorname1": firstname,
 		"Person | Anmeldungen_Alle_AusbildungStudienjahrgang": classfield,
@@ -11,7 +10,7 @@ function normalizeSoft(eventoEntry) {
 		"Person | EMail": email,
 		"Status": status,
 		"_Status": statusId,
-		"PK1": unknownIgnored,
+		//"PK1": unknownIgnored,
 		"PK2": pk2,
 		...rest
 	} = eventoEntry

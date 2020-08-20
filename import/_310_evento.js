@@ -25,7 +25,6 @@ const CERTKEY = loadSecret("evento-oauth-protected-erz-be-ch", ".key")
 //const CERTKEY2 = loadSecret("cert_key_string", ".txt")
 const CERT = loadSecret("evento-oauth-protected-erz-be-ch", ".crt")
 //const CERT2 = loadSecret("cert_string", ".txt")
-let clxvalue = ""
 
 const options = {
 	hostname: URL,
@@ -61,8 +60,8 @@ async function fetchEventoApi(SJ, onlyTest = false)  {
 	//console.log(result);
 	let robj = JSON.parse(result)
 	robj.Result = robj.Result.filter(entry => !entry["Anlass | AnlassNr"] || !entry["Anlass | AnlassNr"].match(/-MP\d\d-/)) //exclude Matura exam
-	if(robj.Result.filter(p => !p["Person | Id"]).length > 50) {
-		throw new Error("Evento 'Person | Id' missing")
+	if(robj.Result.filter(p => !p["Person | Id1"]).length > 50) {
+		throw new Error("Evento 'Person | Id1' missing")
 	}
 	robj.Result.sort((a,b) => a.PK2*1e12+a.PK1 - (b.PK2*1e12+b.PK1))
 	let normalized = robj.Result.map(o=>normalizeSoft(o))
