@@ -10,10 +10,12 @@ function normalizeSoft(eventoEntry) {
 		"Person | EMail": email,
 		"Status": status,
 		"_Status": statusId,
-		//"PK1": unknownIgnored,
 		"PK2": pk2,
 		...rest
 	} = eventoEntry
+
+	let unknownRest = Object.keys(rest).filter(key => !["_Person | Id1", "PK1"].includes(key))
+	console.assert(unknownRest.length === 0, `Evento entries contains unknown fields: ${unknownRest.join()}`)
 
 	if(!sid) sid = pk2
 
@@ -29,10 +31,6 @@ function normalizeSoft(eventoEntry) {
 	teacherfield = teacherfield.replace(/\s\*(?!$)/gu, ";")
 	teacherfield = teacherfield.replace(/\s\*(?:$)/gu, "")
 	teacherfield = teacherfield.replace(/\s+/gu, " ")
-
-	if(Object.keys(rest).length) {
-		console.warn({objHasUnknownProperties: rest})
-	}
 
 	return {sid, lastname, firstname, classfield, courseDescription, cid, teacherfield, email, status, statusId, pk2, ...rest}
 
