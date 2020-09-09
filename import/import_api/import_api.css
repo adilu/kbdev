@@ -18,3 +18,5 @@ table td {padding: 0 0.5em;}
 .action.readd {background-color:  #afa;}
 .action.invalidate, 
 .action.remove {background-color:  #faa;}
+
+.versions .changes {font-size: 0.8em; padding: 0.5em 0em 1em 1em;}

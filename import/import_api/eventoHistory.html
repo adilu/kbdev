@@ -6,7 +6,6 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap-reboot.min.css" type="text/css">
 	<link rel="stylesheet" href="import_api.css" type="text/css">
 	<style type="text/css">
-
 	</style>
 	<script src="api_helpers.js"></script>
 	</head>
@@ -37,7 +36,7 @@
 			
 			timestamps = extractTimestamps(lists)
 			showVersions(timestamps)
-			showMergeLog()
+			//showMergeLog()
 		}
 
 		// async function loadRaw() {
@@ -62,11 +61,14 @@
 
 		function showVersions(timestamps) {
 			document.querySelector(".versions").innerHTML = timestamps.slice(0).reverse().map(t=>{
+				const diffs = findDifferenceTo(t, lists)
+				let countChanges = Object.values(diffs).map(l=>Object.values(l).reduce((a,el)=>a+el.length, 0)).reduce((o, n)=>o+n, 0)
+				if(countChanges === 0) return "";
 				return `<details class="version" data-timestamp="${t}">
-					<summary>${timestampToDate(t)}</summary>
-					<description >${showDifferenceTo(t, lists)}</description>
+					<summary>${timestampToDateTime(t)} (${countChanges} changes)</summary>
+					<div class="changes">${showDifferences(diffs)}</div>
 				</details>`
-			}).join("")
+			}).filter(x=>x!=="").join("")
 		}
 
 		function showMergeLog() {
@@ -128,20 +130,28 @@
 			return c ? `${c.subj} ${c.lp} ${c.klassen} (${c.cid})` : cOrCid
 		}
 
-		function showDifferenceTo(timestamp, lists) {
+		function findDifferenceTo(timestamp, lists) {
 			let index = timestamps.indexOf(+timestamp)
 			let oldTimestamp = timestamps[index-1]
-			let result = ""
+			let differences = {}
 			if(index > 0) {
 				keys.forEach(k=>{
-					console.log(diffLists(lists[`${k}_${oldTimestamp}`], lists[`${k}_${timestamp}`]));
-					let actions = diffLists(lists[`${k}_${oldTimestamp}`], lists[`${k}_${timestamp}`])
-					if(Object.values(actions).some(a=>a.length>0)) {
-						result += `<h3>${k}</h3>`
-						result += showActions(actions)
-					}
+					//console.log(diffLists(lists[`${k}_${oldTimestamp}`], lists[`${k}_${timestamp}`]));
+					differences[k] = diffLists(lists[`${k}_${oldTimestamp}`], lists[`${k}_${timestamp}`])
 				})
 			}
+			return differences
+		}
+
+		function showDifferences(differences) {
+			let result = ""
+			Object.keys(differences).forEach(key=>{
+				let actions = differences[key];
+				if(Object.values(actions).some(a=>a.length>0)) {
+					result += `<h3>${key}</h3>`
+					result += showActions(actions)
+				}
+			})
 			return result
 		}
 

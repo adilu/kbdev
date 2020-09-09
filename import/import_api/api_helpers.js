@@ -6,6 +6,12 @@ function timestampToDate(timestamp) {
 	return new Date(timestamp).toLocaleString("de-ch", {year: "numeric", month: "2-digit", day: "2-digit"})
 }
 
+function timestampToDateTime(timestamp) {
+	const ZZ = "2-digit"
+	return new Date(timestamp).toLocaleString("de-ch", {year: "numeric", month: ZZ, day: ZZ, hour: ZZ, minute: ZZ})
+}
+
+
 function diffByJson(current, old) {
 	let oldJSON = old.map(JSON.stringify)
 	let currentJSON = current.map(JSON.stringify)

@@ -41,7 +41,7 @@
 				let changes = [...added.map(data=>({action: "+", data})), ...removed.map(data=>({action: "-", data}))]
 				changes.sort((a,b)=>+a.data[0] - b.data[0])
 				d.innerHTML += `<div>
-					<details><summary>${timestampToDate(timestamp)}</summary>
+					<details><summary>${timestampToDateTime(timestamp)} (${changes.length} changes)</summary>
 					<table>${changes.map(c=>`<tr class="action ${c.action === "+" ? "add" : "remove"}"><td>${c.action}</td>${c.data.map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</table>
 					</details></div>`
 				await new Promise(r=>setTimeout(r, 0))
