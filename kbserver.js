@@ -9,6 +9,7 @@ const {loadCalendarData} = require("./import/loadCalendarData")
 
 let {adminhandlers} = require("./import/import_api/adminhandlers.js")
 let {auth2_handlers} = require("./auth/auth2_handlers.js")
+let {dbhandlers} = require("./dbhandlers.js")
 
 const corsOptions = {
 	origin: [/localhost/, /gymburgdorf/]
@@ -36,6 +37,7 @@ app.use("/data", cors(corsOptions), expressStaticGzip(PATHS.root_data, staticOpt
 app.use("/config", cors(corsOptions), expressStaticGzip("./config", staticOptions))
 app.use("/cacheSettingsTest", cors(corsOptions), expressStaticGzip("./cacheSettingsTest", staticOptions))
 app.use("/auth", cors(corsOptions), auth2_handlers)
+app.use("/db", cors(corsOptions), dbhandlers)
 app.use("/", expressStaticGzip("./build", staticOptions))
 app.use("/", (req, res) => {res.send(`<DOCTYPE HTML><html><body><img src="https://image.freepik.com/free-vector/page-with-404-code-construction_89224-2833.jpg">
 	<div><a style="font-family: 'Segoe UI', sans-serif; font-size: 2em; color: #224;" href="https://www.gymburgdorf.ch">Zur Gymnasium Burgdorf Haupseite</a></div></div>	
