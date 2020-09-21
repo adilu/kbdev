@@ -2,34 +2,29 @@ let {readdir, readFile} = require("fs").promises
 let path = require("path")
 const PATHS = require("../paths")
 
-async function loadExtractedLists(SJ) {
-	let pathOfYear = PATHS.getEventoExtracts(SJ)
-	let files = await readdir(pathOfYear)
+async function parseJsonDir(pathToJsons) {
+	let files = await readdir(pathToJsons)
 	let data = {}
 	for(let f of files.filter(f=>f.endsWith(".json"))) {
-		data[f.slice(0, f.indexOf(".json"))] = JSON.parse(await readFile(path.join(pathOfYear, f), "UTF-8"))
+		data[f.slice(0, f.indexOf(".json"))] = JSON.parse(await readFile(path.join(pathToJsons, f), "UTF-8"))
 	}
 	return data
+}
+
+async function loadExtractedLists(SJ) {
+	return await parseJsonDir(PATHS.getEventoExtracts(SJ))
 }
 
 async function loadEventoMerged(SJ) {
-	let pathOfYear = PATHS.getEventoMergedData(SJ)
-	let files = await readdir(pathOfYear)
-	let data = {}
-	for(let f of files.filter(f=>f.endsWith(".json"))) {
-		data[f.slice(0, f.indexOf(".json"))] = JSON.parse(await readFile(path.join(pathOfYear, f), "UTF-8"))
-	}
-	return data
+	return await parseJsonDir(PATHS.getEventoMergedData(SJ))
 }
 
 async function loadStplHistory(SJ) {
-	let pathOfYear = PATHS.getStplExtracts(SJ)
-	let files = await readdir(pathOfYear)
-	let data = {}
-	for(let f of files.filter(f=>f.endsWith(".json"))) {
-		data[f.slice(0, f.indexOf(".json"))] = JSON.parse(await readFile(path.join(pathOfYear, f), "UTF-8"))
-	}
-	return data
+	return await parseJsonDir(PATHS.getStplExtracts(SJ))
 }
 
-module.exports = {loadExtractedLists, loadEventoMerged, loadStplHistory}
+async function loadEventoChecks(SJ) {
+	return await parseJsonDir(PATHS.getEventoChecks(SJ))
+}
+
+module.exports = {loadExtractedLists, loadEventoMerged, loadStplHistory, loadEventoChecks}
