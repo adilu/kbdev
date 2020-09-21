@@ -1,9 +1,11 @@
 const PATHS = require("./paths")
 const path = require("path")
+const {existsSync, readFileSync} = require("fs")
 const {readFile, readdir} = require("fs").promises
 const {overwriteIfChanged} = require("./importhelpers/overwriteIfChanged")
 const {loadExtractedLists} = require("./importhelpers/loadData")
 const {getDatehelpers} = require("../config/configPermanent/getDatehelpers")
+const {ValidPeriod} = require("../isomorphic/ValidPeriod.js")
 
 async function eventoMerge(SJ) {
 	const {semOfJSW} = getDatehelpers(SJ)
@@ -14,7 +16,7 @@ async function eventoMerge(SJ) {
 	let merged = {}
 	let logFile = []
 	for(let key of getKeys(lists)) {
-		console.log(key)
+		const vp = new ValidPeriod(key, PATHS.getEventoChecks(SJ))
 		for(let i = 0; i < timestamps.length; i++) {
 			if(neccessary[i] === false) {
 				continue
@@ -39,11 +41,11 @@ async function eventoMerge(SJ) {
 					let cid = entry[1]
 					if(merged.courselist.find(c=>c.cid===cid).semester===2) return
 				}
-				if(validStart > 0) addAfter(entry, validStart)
+				if(validStart > 0) vp.addAfter(entry, validStart, timestamp)
 				logFile.push({key, timestamp, action: "add", value: JSON.stringify(entry)})
 			})
 			readded.forEach(entry=>{
-				addAfter(entry, validStart)
+				vp.addAfter(entry, validStart, timestamp)
 				logFile.push({key, timestamp, action: "readd", value: JSON.stringify(entry)})
 			})
 			removed.forEach(entry=>{
@@ -54,8 +56,8 @@ async function eventoMerge(SJ) {
 					let cid = entry[1]
 					if(merged.courselist.find(c=>c.cid===cid).semester===1) return
 				}
-				if(currentlyValid(entry)) {
-					removeAfter(entry, validStart)
+				if(vp.currentlyValid(entry)) {
+					vp.removeAfter(entry, validStart, timestamp)
 					logFile.push({key, timestamp, action: "invalidate", value: JSON.stringify(entry)})
 				}
 			})
@@ -79,7 +81,7 @@ function diffLists(merged, current, key) {
 	let oldState = merged.map(extractState)
 	let currentState = current.map(extractState)
 	let added = current.filter(entry=>oldIndex[extractPrimary(entry)] === undefined)
-	let readded = merged.filter(entry=>!currentlyValid(entry)).filter(entry=>{
+	let readded = merged.filter(entry=>!(new ValidPeriod()).currentlyValid(entry)).filter(entry=>{
 		return currentIndex[extractPrimary(entry)] >= 0 && entry
 	})
 	let removed = merged.filter(entry=>currentIndex[extractPrimary(entry)] === undefined)
@@ -94,35 +96,6 @@ function diffLists(merged, current, key) {
 	return {added, removed, changed, readded}
 }
 
-function currentlyValid(object) {
-	let validPeriod = getValidArray(object)
-	return validPeriod.length === 0 || validPeriod[validPeriod.length - 1] > 0
-}
-
-function getValidArray(object) {
-	return Array.isArray(object) ? object[2] || [] : object.validPeriod || []
-}
-
-function updateValidArray(object, value) {
-	//if(value < 0) console.log({object, v: getValidArray(object)})
-	Array.isArray(object) 
-		? object[2] = (object[2] || []).concat(value)
-		: object.validPeriod = (object.validPeriod || []).concat(value)
-}
-
-function removeAfter(object, jsw) {
-	console.assert(currentlyValid(object))
-	updateValidArray(object, -jsw)
-}
-
-function addAfter(object, jsw) {
-	console.assert(getValidArray(object).length === 0 || !currentlyValid(object), `addAfter ${jsw} ${JSON.stringify(object)}`)
-	if(getValidArray(object).length === 0) {
-		updateValidArray(object, -0.1)
-	}
-	updateValidArray(object, jsw)
-}
-
 function extractPrimary(entry, key) {
 	return Array.isArray(entry) ? JSON.stringify(entry.slice(0,2)) : (entry.cid || entry.sid)
 }
@@ -130,7 +103,7 @@ function extractPrimary(entry, key) {
 function extractState(entry) {
 	return Array.isArray(entry)
 		? JSON.stringify(entry.slice(0,2))
-		: JSON.stringify(Object.keys(entry).filter(k=>k!=="validPeriod"&&k!=="alias").reduce((o,n)=>{o[n]=entry[n]; return o}, {})) 
+		: JSON.stringify(Object.keys(entry).filter(k=>k!=="validPeriod"&&k!=="alias").reduce((o,n)=>{o[n]=entry[n]; return o}, {}))
 }
 
 function getKeys(lists) {
@@ -151,7 +124,5 @@ function getValidFrom(timestamps, SJ) {
 function extractTimestamps(lists) {
 	return [...new Set(Object.keys(lists).map(v=>+v.split("_")[1]))]
 }
-
-
 
 module.exports = {eventoMerge}

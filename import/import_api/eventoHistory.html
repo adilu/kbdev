@@ -8,6 +8,7 @@
 	<style type="text/css">
 	</style>
 	<script src="api_helpers.js"></script>
+	<script src="../isomorphic/ValidPeriod.js"></script>
 	</head>
 	<body>
 	<h1>Import - Evento History</h1>
@@ -19,7 +20,9 @@
 		<div class="diff"></div>
 	</div>
 
-	<script>
+	<script type="module">
+
+
 	
 		main().catch(console.warn)
 
@@ -27,12 +30,14 @@
 		let timestamps = [];
 		let keys = ["onleave", "noClass", "suslist", "courselist", "susToClass", "susToCourse"]
 		let merged = {};
+		let checks = {};
 
 		async function main() {
 			//let {stplVersions, eventoVersions} = await loadRaw()
 			lists = await loadLists();
 			merged = await loadEventoMerged();
-			console.log({merged});
+			checks = await loadEventoChecks();
+			console.log({merged, checks});
 			
 			timestamps = extractTimestamps(lists)
 			showVersions(timestamps)
@@ -57,6 +62,10 @@
 
 		async function loadEventoMerged() {
 			return fetch(`/admin/getEventoMerged`).then(r=>r.json())
+		}
+
+		async function loadEventoChecks() {
+			return fetch(`/admin/getEventoChecks`).then(r=>r.json())
 		}
 
 		function showVersions(timestamps) {
@@ -164,7 +173,7 @@
 			let oldState = merged.map(extractState)
 			let currentState = current.map(extractState)
 			let added = current.filter(entry=>oldIndex[extractPrimary(entry)] === undefined)
-			let readded = merged.filter(entry=>!currentlyValid(entry)).filter(entry=>{
+			let readded = merged.filter(entry=>!(new ValidPeriod()).currentlyValid(entry)).filter(entry=>{
 				return currentIndex[extractPrimary(entry)] >= 0 && entry
 			})
 			let removed = merged.filter(entry=>currentIndex[extractPrimary(entry)] === undefined)
@@ -177,15 +186,6 @@
 				return false
 			}).filter(x=>!!x)
 			return {added, removed, changed, readded}
-		}
-
-		function currentlyValid(object) {
-			let validPeriod = getValidArray(object)
-			return validPeriod.length === 0 || validPeriod[validPeriod.length - 1] > 0
-		}
-
-		function getValidArray(object) {
-			return Array.isArray(object) ? object[2] || [] : object.validPeriod || []
 		}
 
 		function extractPrimary(entry, key) {
