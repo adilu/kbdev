@@ -9,6 +9,7 @@ const SJ = "2021"
 let tasks = {
 	testWrite,
 	testRead,
+	readMod10
 }
 
 async function dbhandlers(req, res) {
@@ -31,6 +32,19 @@ async function testRead(req, res) {
 	let p = path.join(PATHS.getDataPathOfYear(SJ), "db_test")
 	let files = await fs.promises.readdir(p)
 	res.send({data: files})
+}
+
+async function readMod10(req, res) {
+	let p = path.join(PATHS.getDataPathOfYear(SJ), "db_test")
+	let files = await fs.promises.readdir(p)
+	let x = {}
+	for(const f of files) {
+		let num = +f.slice(6)
+		if(num % 10 === 0) {
+			x["data_" + num] = await fs.promises.readFile(path.join(p, f), "UTF-8")
+		}
+	}
+	res.send(x)
 }
 
 module.exports = {dbhandlers}
