@@ -13,9 +13,9 @@ const adaptEventoCourses = [
 	// adaptLP({semester: 1, original: {lp: "bl", subj: "M"}, classIncludes: "21e", newLp: "ot"}),
 	// adaptLP({semester: 1, original: {lp: "bl", subj: "M"}, classIncludes: "21f", newLp: "gl"}),
 	// adaptLP({semester: 2, original: {lp: "lm", subj: "B"}, classIncludes: "23a", newLp: "hr"}),
-	adaptLP({original: {subj: "KS"}, classIncludes:"21f", newLp: "we~js"}),
-	adaptLP({original: {subj: "KS"}, classIncludes:"21d", newLp: "bi~em"}),
-	adaptLP({original: {subj: "KS"}, classIncludes:"21a", newLp: "ha~mj"}),
+	adaptLP({original: {subj: "KS"}, classIncludes:"21f", newLp: "wee~jas"}),
+	adaptLP({original: {subj: "KS"}, classIncludes:"21d", newLp: "bii~erm"}),
+	adaptLP({original: {subj: "KS"}, classIncludes:"21a", newLp: "häa~moj"}),
 	//new Rule({name: "sS remove group", remove: true, matchByObj: {lp: "", subj: "sS"}, replaceByObj: {lp: "kn", cid: 15349, klassen: "23d 23f"}}),
 	new Rule({name: "change names Malenchini", matchByObj: {firstname: "Julia", lastname: "Malenchini"}, replaceByObj: {firstname: "Max", klasse: "22d"}})
 ]
@@ -23,26 +23,26 @@ const adaptEventoCourses = [
 let allGYM4cache = null
 const adaptStplCourses = [
 	adaptLP({original: {subj: "fH"}, newLp: "dm"}),
-	adaptLP({original: {subj: "KS"}, classIncludes:"21f",  newLp: "we~js"}),
-	adaptLP({original: {subj: "KS"}, classIncludes:"21d",  newLp: "bi~em"}),
-	adaptLP({original: {subj: "KS"}, classIncludes:"21a",  newLp: "ha~mj"}),
-	setKlassen({subj: "KS", lp: "bi"}, "21d"),
+	adaptLP({original: {subj: "KS"}, classIncludes:"21f",  newLp: "wee~jas"}),
+	adaptLP({original: {subj: "KS"}, classIncludes:"21d",  newLp: "bii~erm"}),
+	adaptLP({original: {subj: "KS"}, classIncludes:"21a",  newLp: "häa~moj"}),
+	setKlassen({subj: "KS", lp: "bii"}, "21d"),
 	new Rule({name: "add SK groups", matchByObj: {subj: "SK", klassen: ""},
 		replaceByFunction: (entry, list)=>{
 			let allGYM4 = allGYM4cache = allGYM4cache || [...new Set(list.map(l=>l.klassen.split(" ")[0]))].filter(k=>+k.slice(0,2)===SJE%1000).sort().join(" ")
 			return Object.assign(entry, {klassen: allGYM4})
 		}}),
 	new Rule({name: "remove LT", matchByObj: {subj: "LT"}, remove: true}),
-	new Rule({name: "remove Stv bl", matchByObj: {lp: "bl", klassen: ""}, remove: true}),
+	new Rule({name: "remove Stv bal", matchByObj: {lp: "bal", klassen: ""}, remove: true}),
 	new Rule({name: "add fTH groups", matchByObj: {subj: "fTH"}, replaceByObj: {klassen: "21b 21c 21e 23d 23f 23h"}}),
 	setRoom({subj: "fSA", longroom: ""}, "?"),
 	setRoom({subj: "fI", longroom: ""}, "?"),
-	setRoom({subj: "SK", lp: "lm", longroom: ""}, "E22"),
-	setRoom({subj: "SK", lp: "rf", longroom: ""}, "G"),
+	setRoom({subj: "SK", lp: "lem", longroom: ""}, "E22"),
+	setRoom({subj: "SK", lp: "ref", longroom: ""}, "G"),
 	getRoomFromSameUnr({subj: "KS", longroom: ""}),
 	getRoomFromSameUnr({subj: "sE", longroom: ""}),
 	getRoomFromSameUnr({subj: "SLS", longroom: ""}),
-	getRoomFromSameUnr({subj: "BG", lp: "ze", longroom: ""})
+	getRoomFromSameUnr({subj: "BG", lp: "zes", longroom: ""})
 ]
 
 const adaptEventoSusToCourse = [
