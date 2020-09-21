@@ -1,7 +1,7 @@
 const fs = require("fs").promises
 const {fork, spawn} = require("child_process")
 const path = require("path")
-const {loadExtractedLists, loadEventoMerged, loadStplHistory} = require("../importhelpers/loadData")
+const {loadExtractedLists, loadEventoMerged, loadStplHistory, loadEventoChecks} = require("../importhelpers/loadData")
 
 // process.chdir( __dirname )
 
@@ -12,13 +12,15 @@ let tasks = {
 	getEventoVersions,
 	getExtractedLists,
 	getEventoMerged,
+	getEventoChecks,
 	getStplHistory,
 	importAll,
-	importNext,
+	importNext
 }
 
 async function adminhandlers(req, res) {
 	for(let task in tasks) {
+		console.log(task)
 		if(req.url.startsWith("/"+task)) return tasks[task](req, res)
 	}
 	return await showMainPage(req, res)
@@ -48,24 +50,28 @@ async function adminhandlers(req, res) {
 
 async function getStplVersions(req, res) {
 	let versions = await fs.readdir(path.join(__dirname, `../${SJ}/stpl_extractedVersions`))
-	res.json(versions.filter(v=>v.endsWith(".txt")))
+	await res.json(versions.filter(v => v.endsWith(".txt")))
 }
 
 async function getEventoVersions(req, res) {
 	let versions = await fs.readdir(path.join(__dirname, `../${SJ}/evento_extractedVersions`))
-	res.json(versions.filter(v=>v.endsWith(".json")))
+	await res.json(versions.filter(v => v.endsWith(".json")))
 }
 
 async function getExtractedLists(req, res) {
-	res.json(await loadExtractedLists(SJ))
+	await res.json(await loadExtractedLists(SJ))
 }
 
 async function getEventoMerged(req, res) {
-	res.json(await loadEventoMerged(SJ))
+	await res.json(await loadEventoMerged(SJ))
+}
+
+async function getEventoChecks(req, res) {
+	await res.json(await loadEventoChecks(SJ))
 }
 
 async function getStplHistory(req, res) {
-	res.json(await loadStplHistory(SJ))
+	await res.json(await loadStplHistory(SJ))
 }
 
 async function showMainPage(req, res) {
