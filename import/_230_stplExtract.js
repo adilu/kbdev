@@ -1,5 +1,5 @@
 const PATHS = require("./paths")
-const {readFile, writeFile, copyFile, stat, readdir} = require("fs").promises
+const {readFile, readdir} = require("fs").promises
 const {printPdf} = require("./importhelpers/printPdf")
 const {overwriteIfChanged} = require("./importhelpers/overwriteIfChanged")
 const path = require("path")
@@ -21,7 +21,7 @@ async function extractHistory(SJ) {
 async function stplExtract(SJ) {
 	let versions = await loadVersions(SJ)
 	let arrayOfLessons = await extractLessons(versions, SJ)
-	let lplist = JSON.parse(await readFile(PATHS.getLpList(SJ), "UTF-8"))
+	//let lplist = JSON.parse(await readFile(PATHS.getLpList(SJ), "UTF-8"))
 	let hasChanged = await overwriteIfChanged(PATHS.getStplCurrentFile(SJ), JSON.stringify(arrayOfLessons))
 	console.log(hasChanged ? "Import finished." : "No changes to import.")
 	console.log(`${arrayOfLessons.length} lessons in DB.`)
@@ -77,9 +77,15 @@ async function loadInstances(versions, SJ) {
 		console.log("Processing file: " + v)
 		if(versions[i+1] && validFrom[i] === validFrom[i+1]) {i++; continue}
 		let t = await readFile(PATHS.getStplRaw(SJ) + "/" + v, "utf8")
-		t.split("\r\n").filter(x => x!=="").forEach(x=>{
+		for(const x of t.split("\r\n").filter(x => x!=="")) {
 			let [lp,year,month,day,daylesson,subj,klassen,longroom,,,unr,starttime,duration] = x.split(",")  //aj,2015,2,23,2,sB,1c,E11,0,,249,915,45;
-			let d = new Date(year, month-1, day, 12, 0, 0)
+			// //@check 3letter lps 2021
+			// let mappings = JSON.parse(await readFile(path.join(PATHS.getConfigOfYear(SJ), "mappings.json"), "UTF-8"))
+			// if(lp in mappings) {
+			// 	lp = mappings[lp]
+			// }
+
+			let d = new Date(+year, +month-1, +day, 12, 0, 0)
 			if(lp==="??") lp = "" //@CHECK
 			let weekday = d.getDay()
 			let week = getWeek(d)
@@ -94,7 +100,7 @@ async function loadInstances(versions, SJ) {
 				if (endtime%100 >= 60 || endtime%100 === 0) {endtime +=40}
 				instances.push({unr, lp, weekday, daylesson: +daylesson, subj, klassen, longroom, starttime: +starttime, endtime, jsw})
 			}
-		})
+		}
 		i++
 	}
 	return instances
@@ -119,9 +125,7 @@ function groupInstances(groupedClasses) {
 		let {lp, unr, subj, weekday, daylesson, starttime, endtime, longroom, jsw, klassen} = i
 		let uniqueCode = [unr, subj, weekday, daylesson, starttime, endtime, longroom, jsw, klassen.replace(/\s/g, "")].join("_")
 		groupedInstances[uniqueCode] = groupedInstances[uniqueCode] || i
-		if(!groupedInstances[uniqueCode].lp.includes(lp)) {
-			groupedInstances[uniqueCode].lp += "~"+lp
-		}
+		groupedInstances[uniqueCode].lp = Array.from(new Set([...groupedInstances[uniqueCode].lp.split("~"), ...lp.split("~")])).join("~")
 	})
 	return groupedInstances
 }
