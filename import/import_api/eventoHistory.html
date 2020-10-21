@@ -6,13 +6,22 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap-reboot.min.css" type="text/css">
 	<link rel="stylesheet" href="import_api.css" type="text/css">
 	<style type="text/css">
+		.weekselector {width: 0.5em; height: 0.5em; background-color: #33dd77; display: inline-block; margin-right: 0.1em;}
+		.weekselector.invalid {background-color: #eebbbb;}
 	</style>
 	<script src="api_helpers.js"></script>
-	<script src="../isomorphic/ValidPeriod.js"></script>
+	<script src="../isomorphic/PeriodValidator.js"></script>
+	<script src="../isomorphic/ajaxHelpers.js"></script>
+	<script src="../config/configPermanent/getDatehelpers.js"></script>
 	</head>
 	<body>
 	<h1>Import - Evento History</h1>
 	<div id="logOutput"></div>
+	<div class="pendingComment"><input></div>
+	<div class="pendingGroup">
+		<div class="pendingGroupWeeks"></div><button class="pendingGroupButton" onclick="updateEventoChecks()">check items</button>
+	</div>
+	<div class="pending"></div>
 	<div class="filterfield" contenteditable></div>
 	<table class="merged"></table>
 	<div style="display: flex;">
@@ -20,9 +29,9 @@
 		<div class="diff"></div>
 	</div>
 
-	<script type="module">
+	<script>
 
-
+		const datehelpers = getDatehelpers();
 	
 		main().catch(console.warn)
 
@@ -37,10 +46,11 @@
 			lists = await loadLists();
 			merged = await loadEventoMerged();
 			checks = await loadEventoChecks();
-			console.log({merged, checks});
+			console.log({merged, checks, lists});
 			
 			timestamps = extractTimestamps(lists)
 			showVersions(timestamps)
+			showPending(checks)
 			//showMergeLog()
 		}
 
@@ -67,6 +77,83 @@
 		async function loadEventoChecks() {
 			return fetch(`/admin/getEventoChecks`).then(r=>r.json())
 		}
+		
+		async function updateEventoCheck(key) {
+			let check = Object.assign(checks[key], {importcheck: {
+				comment: document.querySelector(".pendingComment input").value || "",
+				timestamp: Date.now()
+			}})
+			checks = await postData(`/admin/updateEventoCheck`, {[key]: check})
+			showPending(checks)
+		}
+
+		async function updateEventoChecks() {
+			let updated = {}
+			for(let key of Array.from(window.checkedPendings)) {
+				updated[key] = Object.assign(checks[key], {validPeriod: window.groupValidPeriod, importcheck: {
+						comment: document.querySelector(".pendingComment input").value || "",
+						timestamp: Date.now()
+				}})
+			}
+			checks = await postData(`/admin/updateEventoCheck`, updated)
+			window.checkedPendings = new Set()
+			changeGroupSettings()
+			showPending(checks)
+		}
+
+		function toggleweek(key, i) {
+			let validPeriod = key === "group" ? window.groupValidPeriod : (checks[key].validPeriod || checks[key].validPeriodAuto)
+			let validArray = vpToValidArray(validPeriod)
+			validArray[i] = 1 - validArray[i]
+			if(key==="group") {
+				window.groupValidPeriod = validArrayToVp(validArray)
+				changeGroupSettings()
+			}
+			else {
+				checks[key].validPeriod = validArrayToVp(validArray);
+				showPending(checks)
+			}
+		}
+
+		function changeGroupSettings() {
+			let validArray = vpToValidArray(window.groupValidPeriod)
+			document.querySelector(".pendingGroupWeeks").innerHTML = createWeekToggler(validArray, "group")
+			document.querySelector(".pendingGroupButton").textContent = `${Array.from(window.checkedPendings).length} items, ${validArrayToVp(validArray)}`
+		}
+
+		function togglependingcheck(key) {
+			const s = window.checkedPendings = window.checkedPendings || new Set()
+			s.has(key) ? s.delete(key) : s.add(key);
+			let check = checks[key]
+			window.groupValidPeriod = check.validPeriod || check.validPeriodAuto
+			changeGroupSettings()
+		}
+
+		function createWeekToggler(validArray, check) {
+			return `<span>${validArray.map((v, i)=>`<span onclick="toggleweek('${check}', ${i})" class="weekselector ${v ? 'valid' : 'invalid'}"></span>`).join('')}</span>`
+		}
+
+		function showPending(checks) {
+			document.querySelector(".pending").innerHTML = Object.entries(checks).map(([check, value])=>{
+				let [key, ...data] = check.split("-")
+				if(key !== "susToCourse") return ""
+				data = data.map(d=>String(Number(d))===d ? Number(d) : d)
+				let {importcheck, validPeriodAuto, validPeriod} = value;
+				const lastChange = validPeriodAuto && validPeriodAuto.length && validPeriodAuto.slice(-1)[0]
+				if(!lastChange || importcheck.timestamp > lastChange[2]) {
+					return ""
+				}
+				let vpdirect = validPeriod || validPeriodAuto
+				let validArray = vpToValidArray(vpdirect)
+				return `<div class="check" data-check="${check}">
+					<input type="checkbox" style="font-size:2em;" onchange="togglependingcheck('${check}')">
+					<span>${displayValue(data)}</span><span>${JSON.stringify(importcheck)}</span>
+					<br>
+					${createWeekToggler(validArray, check)}
+					<button class="updateEventoCheck" onclick="updateEventoCheck('${check}')">OK ${validArrayToVp(validArray)}</button>
+				</div>`
+			}).filter(x=>x!=="").join("")
+		}
 
 		function showVersions(timestamps) {
 			document.querySelector(".versions").innerHTML = timestamps.slice(0).reverse().map(t=>{
@@ -78,6 +165,22 @@
 					<div class="changes">${showDifferences(diffs)}</div>
 				</details>`
 			}).filter(x=>x!=="").join("")
+		}
+
+		function vpToValidArray(vp, periodReader = new PeriodReader()) {
+			return datehelpers.weekArray.map((w, i) => periodReader.validInSw({validPeriod: vp}, i) ? 1 : 0)
+		}
+
+		function validArrayToVp(validArray) {
+			let vp = []
+			let currently = 1
+			validArray.forEach((v,i)=>{
+				if(v !== currently) {
+					vp.push([v === 0 ? "-" : "+", i])
+					currently = v
+				}
+			})
+			return vp;
 		}
 
 		function showMergeLog() {
@@ -136,7 +239,10 @@
 
 		function displayCourse(cOrCid) {
 			let c = typeof cOrCid === "number" ? merged.courselist.find(c=>c.cid===cOrCid) : cOrCid
-			return c ? `${c.subj} ${c.lp} ${c.klassen} (${c.cid})` : cOrCid
+			if(!c) return cOrCid
+			let stufen = c.klassen.split(" ").map(cl=>cl.slice(0,2)).filter((v,i,a)=>a.indexOf(v)===i)
+			let klassen = stufen.map( s => s + c.klassen.split(" ").filter(cl=>cl.slice(0,2)=== s).map(cl=>cl[2]).join("")).join(" ")
+			return `${c.subj} ${c.lp} ${klassen} (${c.cid})`
 		}
 
 		function findDifferenceTo(timestamp, lists) {
@@ -173,7 +279,7 @@
 			let oldState = merged.map(extractState)
 			let currentState = current.map(extractState)
 			let added = current.filter(entry=>oldIndex[extractPrimary(entry)] === undefined)
-			let readded = merged.filter(entry=>!(new ValidPeriod()).currentlyValid(entry)).filter(entry=>{
+			let readded = merged.filter(entry=>!(new PeriodValidator()).currentlyValid(entry)).filter(entry=>{
 				return currentIndex[extractPrimary(entry)] >= 0 && entry
 			})
 			let removed = merged.filter(entry=>currentIndex[extractPrimary(entry)] === undefined)

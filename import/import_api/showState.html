@@ -132,7 +132,7 @@ function checkMergeEvontoStpl({courselist, lessons, susToCourse, suslist}) {
 function matchesCourse(lesson, course) {
 	let subjMatches = course.subj === lesson.subj || course.subj + "^" === lesson.subj
 	let lpMatches = lesson.lp.includes(course.lp)	
-	let groupMatches = course.klassen.split(" ").some(cl => lesson.klassen.includes(cl)) || lesson.klassen === "IV-I"
+	let groupMatches = course.klassen.split(" ").some(cl => lesson.klassen.includes(cl)) || lesson.klassen === "G1-4"
 	let semMatches = hasOccurrencesInSem(lesson, course.semester)
 	return subjMatches && lpMatches && groupMatches && semMatches
 }
@@ -306,7 +306,7 @@ function susValidInSem(s, sem) {
 }
 
 function matchingValidUntilPresent(m) {
-	return !m[2] || m[2].slice(-1)[0] > 0
+	return !m[2] || m[2].validPeriod.slice(-1)[0] > 0
 }
 
 function getCoursesOfSus(s) {

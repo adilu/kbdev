@@ -5,7 +5,7 @@ const {readFile, readdir} = require("fs").promises
 const {overwriteIfChanged} = require("./importhelpers/overwriteIfChanged")
 const {loadExtractedLists} = require("./importhelpers/loadData")
 const {getDatehelpers} = require("../config/configPermanent/getDatehelpers")
-const {ValidPeriod} = require("../isomorphic/ValidPeriod.js")
+const {PeriodValidator} = require("../isomorphic/PeriodValidator.js")
 
 async function eventoMerge(SJ) {
 	const {semOfJSW} = getDatehelpers(SJ)
@@ -16,7 +16,7 @@ async function eventoMerge(SJ) {
 	let merged = {}
 	let logFile = []
 	for(let key of getKeys(lists)) {
-		const vp = new ValidPeriod(key, PATHS.getEventoChecks(SJ))
+		const periodValidator = new PeriodValidator(key, PATHS.getEventoChecks(SJ))
 		for(let i = 0; i < timestamps.length; i++) {
 			if(neccessary[i] === false) {
 				continue
@@ -41,11 +41,11 @@ async function eventoMerge(SJ) {
 					let cid = entry[1]
 					if(merged.courselist.find(c=>c.cid===cid).semester===2) return
 				}
-				if(validStart > 0) vp.addAfter(entry, validStart, timestamp)
+				if(validStart > 0) periodValidator.addAfter(entry, validStart, timestamp)
 				logFile.push({key, timestamp, action: "add", value: JSON.stringify(entry)})
 			})
 			readded.forEach(entry=>{
-				vp.addAfter(entry, validStart, timestamp)
+				periodValidator.addAfter(entry, validStart, timestamp)
 				logFile.push({key, timestamp, action: "readd", value: JSON.stringify(entry)})
 			})
 			removed.forEach(entry=>{
@@ -56,17 +56,23 @@ async function eventoMerge(SJ) {
 					let cid = entry[1]
 					if(merged.courselist.find(c=>c.cid===cid).semester===1) return
 				}
-				if(vp.currentlyValid(entry)) {
-					vp.removeAfter(entry, validStart, timestamp)
+				if(periodValidator.currentlyValid(entry)) {
+					periodValidator.removeAfter(entry, validStart, timestamp)
 					logFile.push({key, timestamp, action: "invalidate", value: JSON.stringify(entry)})
 				}
 			})
+		}
+		if(periodValidator.counter > 0) {
+			console.log(`<a href="eventoHistory.html">Check Evento Changes ${key} (${periodValidator.counter})</a>`)
 		}
 		if(key==="susToCourse") {
 			const {adaptEventoSusToCourse} = require(path.join(__dirname, "../config", SJ, "temporaryImportRules.js"))
 			adaptEventoSusToCourse.forEach(rule=>merged.susToCourse = rule.check(merged.susToCourse))
 			adaptEventoSusToCourse.forEach(rule=>rule.log())
 			merged.susToCourse.sort((a,b)=>a[0]-b[0])
+			for(const susToCourse of merged.susToCourse) {
+				if(susToCourse[2]) {susToCourse[2].validPeriod = susToCourse[2].validPeriod.map(c=>c.slice(0,2))}
+			}
 		}
 		await overwriteIfChanged(path.join(PATHS.getEventoMergedData(SJ), `${key}.json`), JSON.stringify(merged[key]))
 	}
@@ -81,7 +87,7 @@ function diffLists(merged, current, key) {
 	let oldState = merged.map(extractState)
 	let currentState = current.map(extractState)
 	let added = current.filter(entry=>oldIndex[extractPrimary(entry)] === undefined)
-	let readded = merged.filter(entry=>!(new ValidPeriod()).currentlyValid(entry)).filter(entry=>{
+	let readded = merged.filter(entry=>!(new PeriodValidator()).currentlyValid(entry)).filter(entry=>{
 		return currentIndex[extractPrimary(entry)] >= 0 && entry
 	})
 	let removed = merged.filter(entry=>currentIndex[extractPrimary(entry)] === undefined)

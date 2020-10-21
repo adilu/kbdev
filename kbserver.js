@@ -1,8 +1,9 @@
 const express = require("express")
 const expressStaticGzip = require("express-static-gzip")
 //const proxy = require('express-http-proxy');
-const app = express()
+
 const cors = require("cors")
+const bodyParser = require('body-parser')
 
 const PATHS = require("./import/paths")
 const {loadCalendarData} = require("./import/loadCalendarData")
@@ -11,11 +12,16 @@ let {adminhandlers} = require("./import/import_api/adminhandlers.js")
 let {auth2_handlers} = require("./auth/auth2_handlers.js")
 let {dbhandlers} = require("./dbhandlers.js")
 
+var app = express()
+
 const corsOptions = {
 	origin: [/localhost/, /gymburgdorf/]
 }
 
 const staticOptions = {enableBrotli: true, orderPreference: ["br", "gzip"]}
+
+app.use(bodyParser.urlencoded({ extended: false })) // parse application/x-www-form-urlencoded
+app.use(bodyParser.json()) // parse application/json
 
 // app.use("/test", async (req, res)=>{
 // 	const fs = require("fs").promises
