@@ -16,7 +16,9 @@
 <div><a href="stplHistory.html">STPL History</a></div>
 <div><a href="eventoHistory.html">Evento History</a></div>
 <div><a href="showState.html">Show State</a></div>
-<button class="pure-button pure-button-primary" id="importer">Import</button>
+<button class="pure-button pure-button-primary" id="importer">Import All</button>
+<button class="pure-button pure-button-primary" id="importerstpl">Import STPL</button>
+<button class="pure-button pure-button-primary" id="importerevento">Import Evento</button>
 <button class="pure-button pure-button-primary" id="importnext">Import next</button>
 
 <div id="logOutput" style="white-space:pre-wrap; font-size: 0.8em; margin: 2em 2em 0 0; overflow:auto;"></div>
@@ -41,6 +43,14 @@ else importnext.style.display = "none";
 importer.addEventListener("click", _=>{
 	fetch("/admin/importAll").then(logData)
 	.then(r=>console.log("DONE!", r));
+});
+importerstpl.addEventListener("click", _=>{
+	fetch("/admin/importStplOnly").then(logData)
+		.then(r=>console.log("DONE!", r));
+});
+importerevento.addEventListener("click", _=>{
+	fetch("/admin/importEventoOnly").then(logData)
+		.then(r=>console.log("DONE!", r));
 });
 importnext.addEventListener("click", _=>{
 	fetch("/admin/importNext").then(logData)

@@ -6,7 +6,6 @@ const {handleEventoData} = require("./_320_eventoExtract")
 const {eventoMerge} = require("./_330_eventoMerge")
 const PATHS = require("./paths")
 // const {copyData, moveDevToProduction} = require("./transferFiles");
-// const {printStplPdfs} = require("./printStplPdfs");
 
 const {compressDir} = require("./importhelpers/compressor")
 
@@ -14,19 +13,17 @@ const {compressDir} = require("./importhelpers/compressor")
 // const forceUpload = true;
 
 async function importAll(SJ) {
-	await fetchStplInputs(SJ)
-	//may be move DatenKB to correct /stpldata/year folder
-	const {newFileFound} = await stplUpdate(SJ)
-	const hasStplChanged = await stplExtract(SJ)
+	await importStpl(SJ)
+	await importEvento(SJ)
+	await uploadAndPrint(SJ)
+}
 
-	//await compressDir("../../cacheSettingsTest")
-	let {hasChanged, ...rest} = await fetchEventoApi(SJ)
-	let haveFilesChanged = await handleEventoData(SJ)
-	let d = await eventoMerge(SJ)
+async function uploadAndPrint(SJ) {
+//await compressDir("../../cacheSettingsTest")
 	//
 	// await compressDir(PATHS.getStplRaw(SJ))
 	// await compressDir(PATHS.getEventoRaw(SJ))
-	await printStplPdfs(SJ)
+	// await printStplPdfs(SJ)
 
 	await compressDir(PATHS.getEventoMergedData(SJ))
 	await compressDir(PATHS.getStplCurrent(SJ))
@@ -43,4 +40,27 @@ async function importAll(SJ) {
 	// }
 }
 
-module.exports = {importAll}
+async function importStplOnly(SJ) {
+	await importStpl(SJ)
+	await uploadAndPrint(SJ)
+}
+
+async function importEventoOnly(SJ) {
+	await importEvento(SJ)
+	await uploadAndPrint(SJ)
+}
+
+async function importStpl(SJ) {
+	await fetchStplInputs(SJ)
+	//may be move DatenKB to correct /stpldata/year folder
+	const {newFileFound} = await stplUpdate(SJ)
+	const hasStplChanged = await stplExtract(SJ)
+}
+
+async function importEvento(SJ) {
+	let {hasChanged, ...rest} = await fetchEventoApi(SJ)
+	let haveFilesChanged = await handleEventoData(SJ)
+	let d = await eventoMerge(SJ)
+}
+
+module.exports = {importAll, importEventoOnly, importStplOnly}

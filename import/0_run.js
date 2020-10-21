@@ -1,10 +1,11 @@
 const SJ = process.argv[2]
-const {importAll} = require("./importAll")
+const which = process.argv[3] || "all"
+const {importAll, importStplOnly, importEventoOnly} = require("./importAll")
 const {loadCalendarData} = require("./loadCalendarData.js")
 
 if(["1920", "2021"].includes(SJ)) {
-	console.log(SJ)
-	importAll(SJ)
+	console.log(which, SJ)
+	which === "stpl" ? importStplOnly(SJ) : which === "evento" ? importEventoOnly(SJ) : importAll(SJ)
 	loadCalendarData(SJ)
 }
 else {

@@ -2,6 +2,8 @@ const fs = require("fs").promises
 const {fork, spawn} = require("child_process")
 const path = require("path")
 const {loadExtractedLists, loadEventoMerged, loadStplHistory, loadEventoChecks} = require("../importhelpers/loadData")
+const PATHS = require("../paths")
+const {PeriodValidator} = require("../../isomorphic/PeriodValidator")
 
 // process.chdir( __dirname )
 
@@ -13,9 +15,12 @@ let tasks = {
 	getExtractedLists,
 	getEventoMerged,
 	getEventoChecks,
+	updateEventoCheck,
 	getStplHistory,
 	importAll,
-	importNext
+	importNext,
+	importStplOnly,
+	importEventoOnly,
 }
 
 async function adminhandlers(req, res) {
@@ -70,6 +75,20 @@ async function getEventoChecks(req, res) {
 	await res.json(await loadEventoChecks(SJ))
 }
 
+async function updateEventoCheck(req, res) {
+	const pv = new PeriodValidator("susToCourse", PATHS.getEventoChecks(SJ))
+	await pv.check(req.body)
+	await res.json(await loadEventoChecks(SJ))
+}
+
+async function updateEventoChecks(req, res) {
+	console.log(req, req.body)
+	const pv = new PeriodValidator("susToCourse", PATHS.getEventoChecks(SJ))
+	pv.check(req.body)
+	console.log({pv})
+	await res.json(await loadEventoChecks(SJ))
+}
+
 async function getStplHistory(req, res) {
 	await res.json(await loadStplHistory(SJ))
 }
@@ -89,10 +108,10 @@ function getYear() {
 	return {currentyear, nextyear}
 }
 
-function importAll(req, res, next = false) {
+function importAll(req, res, next = false, which = "all") {
 	let SJ = next ? getYear().nextyear : getYear().currentyear
 	res.writeHead(200, {"Content-Type": "text/html"})
-	const importer = fork("./import/0_run.js", [SJ], { silent: true })
+	const importer = fork("./import/0_run.js", [SJ, which], { silent: true })
 	res.write("Importing...\n")
 	importer.stdout.on("data", (data) => res.write(data.toString()) )
 	importer.stderr.on("data", (data) => res.write(data.toString()) )
@@ -104,6 +123,14 @@ function importAll(req, res, next = false) {
 
 function importNext(req, res) {
 	importAll(req, res, true)
+}
+
+function importStplOnly(req, res) {
+	importAll(req, res, false, "stpl")
+}
+
+function importEventoOnly(req, res) {
+	importAll(req, res, false, "evento")
 }
 
 module.exports = {adminhandlers}
