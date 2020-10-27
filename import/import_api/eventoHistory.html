@@ -84,6 +84,8 @@
 				timestamp: Date.now()
 			}})
 			checks = await postData(`/admin/updateEventoCheck`, {[key]: check})
+			window.checkedPendings = new Set()
+			changeGroupSettings()
 			showPending(checks)
 		}
 
