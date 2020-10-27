@@ -5,10 +5,13 @@ const {Rule} = require("../../import/Rule.js")
 const verbose = true // process.platform.startsWith("win")
 
 const adaptEventoCourses = [
-	//addPartnerCourse({semester: 1, original: {subj: "sR", lp: "kr"}, classIncludes:"20", partner: {lp: "cf"}}),
+	// addPartnerCourse({semester: 1, original: {subj: "sR", lp: "kr"}, classIncludes:"20", partner: {lp: "cf"}}),
 	// addPartnerCourse({semester: 2, original: {subj: "sW"}, classIncludes:"22a", partner: {subj: "sR", lp: "cf"}}),
 	// addPartnerCourse({semester: 2, original: {subj: "sW"}, classIncludes:"22b", partner: {subj: "sR", lp: "cf"}}),
 	// addPartnerCourse({semester: 2, original: {subj: "sW"}, classIncludes:"22b", partner: {subj: "WR", lp: "kr"}, cidDelta: 9998}),
+	adaptLP({original: {subj: "sR", lp: "fla"}, classIncludes:"23e", newLp: "crf"}),
+	adaptLP({original: {subj: "sR", lp: "fla"}, classIncludes:"23b", newLp: "crf"}),
+	adaptLP({original: {subj: "WR", lp: "fla"}, classIncludes:"23a", newLp: "crf"}),
 	// adaptLP({semester: 1, original: {lp: "bl", subj: "M"}, classIncludes: "23f", newLp: "sb"}),
 	// adaptLP({semester: 1, original: {lp: "bl", subj: "M"}, classIncludes: "21e", newLp: "ot"}),
 	// adaptLP({semester: 1, original: {lp: "bl", subj: "M"}, classIncludes: "21f", newLp: "gl"}),
@@ -22,7 +25,7 @@ const adaptEventoCourses = [
 
 let allGYM4cache = null
 const adaptStplCourses = [
-	adaptLP({original: {subj: "fH"}, newLp: "dm"}),
+	adaptLP({original: {subj: "fH"}, newLp: "dum"}),
 	adaptLP({original: {subj: "KS"}, classIncludes:"21f",  newLp: "wee~jas"}),
 	adaptLP({original: {subj: "KS"}, classIncludes:"21d",  newLp: "bii~erm"}),
 	adaptLP({original: {subj: "KS"}, classIncludes:"21a",  newLp: "häa~moj"}),
@@ -33,8 +36,10 @@ const adaptStplCourses = [
 			return Object.assign(entry, {klassen: allGYM4})
 		}}),
 	new Rule({name: "remove LT", matchByObj: {subj: "LT"}, remove: true}),
+	new Rule({name: "skip Test LP äü", matchByObj: {subj: "V"}, remove: true}),
 	new Rule({name: "remove Stv bal", matchByObj: {lp: "bal", klassen: ""}, remove: true}),
 	new Rule({name: "add fTH groups", matchByObj: {subj: "fTH"}, replaceByObj: {klassen: "21b 21c 21e 23d 23f 23h"}}),
+	new Rule({name: "f IV-I to G1-4", matchByObj: {klassen: "IV-I"}, replaceByObj: {klassen: "G1-4"}}),
 	setRoom({subj: "fSA", longroom: ""}, "?"),
 	setRoom({subj: "fI", longroom: ""}, "?"),
 	setRoom({subj: "SK", lp: "lem", longroom: ""}, "E22"),
