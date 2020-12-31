@@ -10,6 +10,7 @@ function getDatehelpers(SJ) {
 	const SJA = 2000 + parseInt(SJ.slice(0,2))
 	const SJE = 2000 + parseInt(SJ.slice(2,4))
 
+	//@TODO remove show from permanent config
 	const periods = [
 		{
 			short: "S1",
@@ -20,13 +21,13 @@ function getDatehelpers(SJ) {
 		},{
 			short: "S2",
 			name: "2. Semester",
-			show: SJE <= 2020,
+			show: SJE <= 2021,
 			first: 20,
 			last: 39
 		},{
 			short: "OP",
-			name: "ohne Primen",
-			show: SJE <= 2020,
+			name: "ohne GYM4",
+			show: SJE <= 2021,
 			first: 31,
 			last: 39
 		}
@@ -53,6 +54,7 @@ function getDatehelpers(SJ) {
 		}
 		runningDate.setDate(runningDate.getDate() + 7)
 	}
+	const lastJSW = weekArray.length - 1
 
 	/**
 	 *
@@ -150,7 +152,7 @@ function getDatehelpers(SJ) {
 
 	return {
 		SJ, SJA, SJE,
-		weekArray, periods,
+		weekArray, periods, lastJSW,
 		starttimes, endtimes,
 		weekdays, weekdaysLong,
 		isVacation,
