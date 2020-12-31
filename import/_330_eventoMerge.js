@@ -34,6 +34,9 @@ async function eventoMerge(SJ) {
 				Object.keys(now).filter(k=>existing[k] !== now[k]).forEach(k=>{
 					logFile.push({key, timestamp, action: "change", value: JSON.stringify(now), changed: k, from: existing[k], to: now[k]})
 				})
+				if(["courselist", "suslist", "onleave", "noclass"].includes(key)) {
+					merged[key][merged[key].indexOf(existing)] = now
+				}
 			})
 			added.forEach(entry=>{
 				merged[key].push(entry)
