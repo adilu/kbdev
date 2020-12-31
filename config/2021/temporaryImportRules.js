@@ -11,7 +11,7 @@ const adaptEventoCourses = [
 	// addPartnerCourse({semester: 2, original: {subj: "sW"}, classIncludes:"22b", partner: {subj: "WR", lp: "kr"}, cidDelta: 9998}),
 	adaptLP({original: {subj: "sR", lp: "fla"}, classIncludes:"23e", newLp: "crf"}),
 	adaptLP({original: {subj: "sR", lp: "fla"}, classIncludes:"23b", newLp: "crf"}),
-	adaptLP({original: {subj: "WR", lp: "fla"}, classIncludes:"23a", newLp: "crf"}),
+	adaptLP({semester: 1, original: {subj: "WR", lp: "fla"}, classIncludes:"23a", newLp: "crf"}),
 	// adaptLP({semester: 1, original: {lp: "bl", subj: "M"}, classIncludes: "23f", newLp: "sb"}),
 	// adaptLP({semester: 1, original: {lp: "bl", subj: "M"}, classIncludes: "21e", newLp: "ot"}),
 	// adaptLP({semester: 1, original: {lp: "bl", subj: "M"}, classIncludes: "21f", newLp: "gl"}),

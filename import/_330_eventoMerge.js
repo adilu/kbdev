@@ -41,6 +41,9 @@ async function eventoMerge(SJ) {
 					let cid = entry[1]
 					if(merged.courselist.find(c=>c.cid===cid).semester===2) return
 				}
+				if(key==="courselist" && semOfJSW(validStart) === 1) {
+					if(entry.semester===2) return
+				}
 				if(validStart > 0) periodValidator.addAfter(entry, validStart, timestamp)
 				logFile.push({key, timestamp, action: "add", value: JSON.stringify(entry)})
 			})
