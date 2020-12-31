@@ -13,13 +13,16 @@
   "author": "info@3e8.ch",
   "license": "ISC",
   "dependencies": {
+    "3e8-logremote": "^1.0.5",
     "basic-ftp": "^4.6.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "express-static-gzip": "^2.0.8",
-    "google-auth-library": "^6.0.2",
+    "express-static-gzip": "^2.1.0",
+    "google-auth-library": "^6.1.3",
     "googleapis": "^52.1.0",
-    "svelte": "^3.25.1"
+    "nodemailer": "^6.4.14",
+    "sendmail": "^1.6.1",
+    "svelte": "^3.29.4"
   },
   "devDependencies": {
     "eslint": "^6.8.0"
