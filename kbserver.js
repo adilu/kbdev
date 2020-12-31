@@ -3,7 +3,7 @@ const expressStaticGzip = require("express-static-gzip")
 //const proxy = require('express-http-proxy');
 
 const cors = require("cors")
-const bodyParser = require('body-parser')
+const bodyParser = require("body-parser")
 
 const PATHS = require("./import/paths")
 const {loadCalendarData} = require("./import/loadCalendarData")
@@ -11,6 +11,8 @@ const {loadCalendarData} = require("./import/loadCalendarData")
 let {adminhandlers} = require("./import/import_api/adminhandlers.js")
 let {auth2_handlers} = require("./auth/auth2_handlers.js")
 let {dbhandlers} = require("./dbhandlers.js")
+const {log, logError, warn} = require("3e8-logremote")
+
 
 var app = express()
 
@@ -45,10 +47,20 @@ app.use("/cacheSettingsTest", cors(corsOptions), expressStaticGzip("./cacheSetti
 app.use("/auth", cors(corsOptions), auth2_handlers)
 app.use("/db", cors(corsOptions), dbhandlers)
 app.use("/", expressStaticGzip("./build", staticOptions))
-app.use("/", (req, res) => {res.send(`<DOCTYPE HTML><html><body><img src="https://image.freepik.com/free-vector/page-with-404-code-construction_89224-2833.jpg">
-	<div><a style="font-family: 'Segoe UI', sans-serif; font-size: 2em; color: #224;" href="https://www.gymburgdorf.ch">Zur Gymnasium Burgdorf Haupseite</a></div></div>	
-</body></html>`)})
-
+app.use(async (err, req, res, next) => {
+	await new Promise(r=>setTimeout(r, 200))
+	if(err) {
+		logError(err)
+		res.send(`<!DOCTYPE HTML><html><body>Etwas ging schief...
+			<div><a style="font-family: 'Segoe UI', sans-serif; font-size: 2em; color: #224;" href="https://www.gymburgdorf.ch">Zur Gymnasium Burgdorf Haupseite</a></div></div>	
+		</body></html>`)
+	}
+	else if(!res.headersSent) {
+		res.send(`<!DOCTYPE HTML><html><body><img src="https://image.freepik.com/free-vector/page-with-404-code-construction_89224-2833.jpg">
+			<div><a style="font-family: 'Segoe UI', sans-serif; font-size: 2em; color: #224;" href="https://www.gymburgdorf.ch">Zur Gymnasium Burgdorf Haupseite</a></div></div>	
+		</body></html>`)
+	}
+})
 //app.use("/", expressStaticGzip("./", staticOptions));
 
 //app.use("/admin", proxy('http://localhost:12222'))
@@ -59,4 +71,3 @@ console.log(`KB server running on ${11300}`)
 
 loadCalendarData()
 setInterval(loadCalendarData, 60*60*1000)
-
