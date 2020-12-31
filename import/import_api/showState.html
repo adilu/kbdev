@@ -50,7 +50,7 @@
 
 <script>
 let SJ = "2021"
-let sem2ready = false
+let sem2ready = true
 
 function addScript(path) {
 	var script   = document.createElement("script");
@@ -337,7 +337,7 @@ function checkIfSusHasEverySubj(s, SEM) {
 			}
 		}
 		else {
-			if (mysubjs.length === 0) warnings.push(maptoerror(s, `hat kein ${group}.`));
+			if (mysubjs.length === 0 && !(subjs[0] === "SK" && SEM === 2)) warnings.push(maptoerror(s, `hat kein ${group}.`));
 			if (mysubjs.length > 1 && !["Splus", "KUplus"].some(k => mysubjs.some(c => c.coursetype.startsWith(k)))) warnings.push(maptoerror(s, `hat zu viele ${group} (${mysubjs.map(c => c.subj).join(" ")}).`));
 		}
 	});
