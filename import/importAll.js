@@ -1,4 +1,5 @@
 const {fetchStplInputs} = require("./_210_fetchStplInputs")
+const {notifyAdmin} = require("../mail/sendmail")
 const {stplUpdate} = require("./_220_stplUpdate")
 const {stplExtract, extractHistory, printStplPdfs} = require("./_230_stplExtract")
 const {fetchEventoApi} = require("./_310_evento")
@@ -55,11 +56,17 @@ async function importStpl(SJ) {
 	//may be move DatenKB to correct /stpldata/year folder
 	const {newFileFound} = await stplUpdate(SJ)
 	const hasStplChanged = await stplExtract(SJ)
+	if(newFileFound || hasStplChanged) {
+		notifyAdmin(`new Stpl data found ${SJ}`, `new Stpl data found ${SJ}`)
+	}
 }
 
 async function importEvento(SJ) {
 	let {hasChanged, ...rest} = await fetchEventoApi(SJ)
 	let haveFilesChanged = await handleEventoData(SJ)
+	if(haveFilesChanged) {
+		notifyAdmin(`new Evento data found ${SJ}`, `new Evento data found ${SJ}`)
+	}
 	let d = await eventoMerge(SJ)
 }
 

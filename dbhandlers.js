@@ -1,6 +1,7 @@
 const fs = require("fs")
 const path = require("path")
 const PATHS = require("./import/paths")
+const {notifyAdmin} = require("./mail/sendmail")
 
 // process.chdir( __dirname )
 
@@ -31,6 +32,7 @@ async function testWrite(req, res) {
 async function testRead(req, res) {
 	let p = path.join(PATHS.getDataPathOfYear(SJ), "db_test")
 	let files = await fs.promises.readdir(p)
+	notifyAdmin("<h1>Hooray, Adi, that works</h1>", "yes, its here!")
 	res.send({data: files})
 }
 
