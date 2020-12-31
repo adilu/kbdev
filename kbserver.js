@@ -9,7 +9,7 @@ const PATHS = require("./import/paths")
 const {loadCalendarData} = require("./import/loadCalendarData")
 
 let {adminhandlers} = require("./import/import_api/adminhandlers.js")
-let {auth2_handlers} = require("./auth/auth2_handlers.js")
+let {auth2_handlers2} = require("./auth/auth2_handlers2.js")
 let {dbhandlers} = require("./dbhandlers.js")
 const {log, logError, warn} = require("3e8-logremote")
 
@@ -44,7 +44,7 @@ app.use("/isomorphic", expressStaticGzip("./isomorphic", staticOptions))
 app.use("/data", cors(corsOptions), expressStaticGzip(PATHS.root_data, staticOptions))
 app.use("/config", cors(corsOptions), expressStaticGzip("./config", staticOptions))
 app.use("/cacheSettingsTest", cors(corsOptions), expressStaticGzip("./cacheSettingsTest", staticOptions))
-app.use("/auth", cors(corsOptions), auth2_handlers)
+app.use("/auth", cors(corsOptions), auth2_handlers2)
 app.use("/db", cors(corsOptions), dbhandlers)
 app.use("/", expressStaticGzip("./build", staticOptions))
 app.use(async (err, req, res, next) => {

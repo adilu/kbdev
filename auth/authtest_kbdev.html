@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Authtest_kbdev</title>
+</head>
+<body>
+Test
+<button onclick="login()">
+  Login
+</button>
+<div class="test_result"></div>
+<script>
+
+  const authurl = location.href.includes("localhost") ? "http://localhost:11300/auth" : "https://gymburgdorf1.hidora.com/auth"
+
+  function login() {
+  	location.href=`/auth/logintest?to=${authurl}/authtest/ok`
+  }
+	var params = new URLSearchParams(location.search);
+
+  if(params.has("jwts")) {
+  	let jwts = params.get("jwts")
+  	console.log({jwts});
+  	fetch(`/auth/decode?jwts=${jwts}`).then(r=>r.json()).then(r=>document.querySelector(".test_result").innerHTML = r.user)
+  }
+
+	// And you can iterate over all parameters
+	for (const [key, value] of params) {
+		console.log(`Key: ${key}, Value: ${value}`);
+	}
+</script>
+</body>
+</html>

@@ -11,17 +11,22 @@ function encode(user) {
 	return encrypt(JSON.stringify(payload))
 }
 
-
 function encrypt(text){
 	let iv = crypto.randomBytes(16)
 	let cipher = crypto.createCipheriv("aes-256-cbc", encode_decode_key, iv)
 	return cipher.update(text,"utf8","hex") + cipher.final("hex") + "_" + iv.toString("hex")
 }
-//
-// function decrypt(text){
-//   let decipher = crypto.createDecipher('aes-256-cbc', encode_decode_key);
-//   return decipher.update(text,'hex','utf8') + decipher.final('utf8');
-// }
+
+function decrypt(text){
+	let [payload, iv] = text.split("_")
+	let decipher = crypto.createDecipheriv("aes-256-cbc", encode_decode_key, Buffer.from(iv, "hex"))
+	return decipher.update(payload,"hex","utf8") + decipher.final("utf8")
+}
+
+function decode(text){
+	return JSON.parse(decrypt(text))
+}
+
 //
 // function decodeUid(uid) {
 //   let [b62date, encrypteduser, hashed] = uid.split("*");
@@ -34,4 +39,4 @@ function encrypt(text){
 //   return valid && user;
 // }
 
-module.exports = {encode}
+module.exports = {encode, decode}
