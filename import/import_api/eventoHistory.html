@@ -17,7 +17,7 @@
 	<body>
 	<h1>Import - Evento History</h1>
 	<div id="logOutput"></div>
-	<div class="pendingComment"><input></div>
+	<div class="pendingComment"><input placeholder="comment"></div>
 	<div class="pendingGroup">
 		<div class="pendingGroupWeeks"></div><button class="pendingGroupButton" onclick="updateEventoChecks()">check items</button>
 	</div>
@@ -40,6 +40,7 @@
 		let keys = ["onleave", "noClass", "suslist", "courselist", "susToClass", "susToCourse"]
 		let merged = {};
 		let checks = {};
+		window.checkedPendings = new Set()
 
 		async function main() {
 			//let {stplVersions, eventoVersions} = await loadRaw()
@@ -77,17 +78,6 @@
 		async function loadEventoChecks() {
 			return fetch(`/admin/getEventoChecks`).then(r=>r.json())
 		}
-		
-		async function updateEventoCheck(key) {
-			let check = Object.assign(checks[key], {importcheck: {
-				comment: document.querySelector(".pendingComment input").value || "",
-				timestamp: Date.now()
-			}})
-			checks = await postData(`/admin/updateEventoCheck`, {[key]: check})
-			window.checkedPendings = new Set()
-			changeGroupSettings()
-			showPending(checks)
-		}
 
 		async function updateEventoChecks() {
 			let updated = {}
@@ -120,19 +110,24 @@
 		function changeGroupSettings() {
 			let validArray = vpToValidArray(window.groupValidPeriod)
 			document.querySelector(".pendingGroupWeeks").innerHTML = createWeekToggler(validArray, "group")
-			document.querySelector(".pendingGroupButton").textContent = `${Array.from(window.checkedPendings).length} items, ${validArrayToVp(validArray)}`
+			document.querySelector(".pendingGroupButton").textContent = `${Array.from(window.checkedPendings).length} items, ${JSON.stringify(validArrayToVp(validArray))}`
 		}
 
 		function togglependingcheck(key) {
-			const s = window.checkedPendings = window.checkedPendings || new Set()
+			const s = window.checkedPendings
 			s.has(key) ? s.delete(key) : s.add(key);
 			let check = checks[key]
 			window.groupValidPeriod = check.validPeriod || check.validPeriodAuto
 			changeGroupSettings()
+			showPending(checks)
 		}
 
 		function createWeekToggler(validArray, check) {
 			return `<span>${validArray.map((v, i)=>`<span onclick="toggleweek('${check}', ${i})" class="weekselector ${v ? 'valid' : 'invalid'}"></span>`).join('')}</span>`
+		}
+
+		function createWeekDisplay(validPeriod) {
+			return `<span>${vpToValidArray(validPeriod).map((v, i)=>`<span class="weekselector ${v ? 'valid' : 'invalid'}"></span>`).join('')}</span>`
 		}
 
 		function showPending(checks) {
@@ -145,14 +140,23 @@
 				if(!lastChange || importcheck.timestamp > lastChange[2]) {
 					return ""
 				}
+				let firstChecked = window.checkedPendings.size > 0 && checks[Array.from(window.checkedPendings)[0]]
+				let canBeChecked = window.checkedPendings.size === 0 || (
+					JSON.stringify(firstChecked.validPeriodAuto) === JSON.stringify(validPeriodAuto) &&
+					JSON.stringify(firstChecked.validPeriod) === JSON.stringify(validPeriod)
+				)
 				let vpdirect = validPeriod || validPeriodAuto
 				let validArray = vpToValidArray(vpdirect)
 				return `<div class="check" data-check="${check}">
-					<input type="checkbox" style="font-size:2em;" onchange="togglependingcheck('${check}')">
-					<span>${displayValue(data)}</span><span>${JSON.stringify(importcheck)}</span>
-					<br>
-					${createWeekToggler(validArray, check)}
-					<button class="updateEventoCheck" onclick="updateEventoCheck('${check}')">OK ${validArrayToVp(validArray)}</button>
+					<div>
+						${canBeChecked ? `<input type="checkbox" style="font-size:2em;" onchange="togglependingcheck('${check}')" ${window.checkedPendings.has(check) ? "checked" : ""}>` : "&nbsp;&nbsp;"}
+						<span>${displayValue(data)}</span>
+					</div>
+					${importcheck ? `<div>&nbsp;&nbsp;<span class="icon comment"></span> ${displayDate(importcheck.timestamp)}
+						${createWeekDisplay(validPeriod)} ${importcheck.comment || ""}</div>`
+					: ""}
+					<div>&nbsp;&nbsp;<span class="icon auto"></span> ${displayDate(lastChange[2])} ${createWeekDisplay(validPeriodAuto)}</div>
+					<!--button class="updateEventoCheck" onclick="updateEventoCheck('${check}')">OK ${validArrayToVp(validArray)}</button-->
 				</div>`
 			}).filter(x=>x!=="").join("")
 		}
@@ -202,7 +206,7 @@
 				}
 				return `<tr class="action ${d.action}">
 					<td>${d.key}</td>
-					<td>${timestampToDate(d.timestamp)}</td>
+					<td>${displayDate(d.timestamp)}</td>
 					<td>${d.action.slice(0,1)}</td>
 					<td>${v}</td>
 				</tr>`
@@ -271,6 +275,8 @@
 			})
 			return result
 		}
+
+
 
 
 		function diffLists(merged, current, key) {
