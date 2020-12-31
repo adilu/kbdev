@@ -32,6 +32,8 @@ class PeriodValidator extends PeriodReader {
 		if(this.key === "susToClass") return `${this.path}/susToClass-${entry[0]}-${entry[1]}.json`
 		if(this.key === "suslist") return `${this.path}/sid-${entry.sid}.json`
 		if(this.key === "courselist") return `${this.path}/cid-${entry.cid}.json`
+		if(this.key === "onleave") return `${this.path}/onleave-${entry.sid}.json`
+		if(this.key === "noclass") return `${this.path}/noclass-${entry.sid}.json`
 		console.log("add Changewatcher name?", this.key, entry)
 		return ""
 	}

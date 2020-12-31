@@ -11,6 +11,10 @@ function timestampToDateTime(timestamp) {
 	return new Date(timestamp).toLocaleString("de-ch", {year: "numeric", month: ZZ, day: ZZ, hour: ZZ, minute: ZZ})
 }
 
+function displayDate(timestamp) {
+	return `<span title=${timestamp}>${timestampToDateTime(timestamp)}</span>`
+}
+
 
 function diffByJson(current, old) {
 	let oldJSON = old.map(JSON.stringify)
