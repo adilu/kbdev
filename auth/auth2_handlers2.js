@@ -118,6 +118,6 @@ let successfulLogins = 0
 //let successfulLogins = 0
 setInterval(_=>log(`${successfulLogins} successful logins in 24h`), 24*3600*1000)
 
-log({MYURL, v: 3})
+log({MYURL, v: 4})
 
 module.exports = {auth2_handlers2}
