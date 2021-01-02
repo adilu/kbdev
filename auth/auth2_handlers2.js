@@ -1,6 +1,7 @@
 //const url = require("url")
 // b62 = require("../metamodules/base62"),
 const {encode, decode} = require("./kb_encode")
+const {encode: encodeToUid} = require("./legacy_uid_for_3e8/codecUserV2")
 const {loadSecret} = require("../isomorphic/loadSecret")
 const {google} = require("googleapis")
 const {log, logError, warn} = require("3e8-logremote")
@@ -99,6 +100,11 @@ async function auth2_handlers2(req, res, next) {
 	else if(req.url.startsWith("/decode")) {
 		let jwts = urlObj.searchParams.get("jwts")
 		await res.json(decode(jwts))
+	}
+	else if(req.url.startsWith("/jwts2uid")) {
+		let jwts = urlObj.searchParams.get("jwts")
+		let {user} = decode(jwts)
+		await res.json({user, uid: encodeToUid(user)})
 	}
 	else if(req.url.startsWith("/defaulttest")) {
 		await res.sendFile("./authtest_kbdev.html", {root: __dirname})
