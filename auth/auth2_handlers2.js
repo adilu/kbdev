@@ -75,7 +75,7 @@ async function auth2_handlers2(req, res, next) {
 					if (e) return reject(e)
 					let payload = login.getPayload()
 					let {sub: id, email, name, hd: domain, picture} = payload
-					let user = email.replace("@gymburgdorf.ch", "").toLowerCase()
+					let user = email.replace("@gymburgdorf.ch", "").toLowerCase().replace(/\./g, "_")
 					resolve({id, email, picture, domain, user})
 				}
 			)})
