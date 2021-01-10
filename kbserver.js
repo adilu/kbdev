@@ -17,7 +17,7 @@ const {log, logError, warn} = require("3e8-logremote")
 var app = express()
 
 const corsOptions = {
-	origin: [/localhost/, /gymburgdorf/]
+	origin: [/localhost/, /gymburgdorf/, /https:\/\/([A-z0-9]\.)?3e8\.ch/]
 }
 
 const staticOptions = {enableBrotli: true, orderPreference: ["br", "gzip"]}
