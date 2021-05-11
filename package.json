@@ -21,7 +21,7 @@
     "express-static-gzip": "^2.1.0",
     "google-auth-library": "^6.1.3",
     "googleapis": "^52.1.0",
-    "nodemailer": "^6.4.14",
+    "nodemailer": "^6.6.0",
     "sendmail": "^1.6.1",
     "svelte": "^3.29.4"
   },
