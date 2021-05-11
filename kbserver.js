@@ -47,7 +47,13 @@ app.use("/cacheSettingsTest", cors(corsOptions), expressStaticGzip("./cacheSetti
 app.use("/auth", cors(corsOptions), auth2_handlers2)
 app.use("/db", cors(corsOptions), dbhandlers)
 app.use("/", expressStaticGzip("./build", staticOptions))
+app.use((req, res)=>{
+	res.status(404).send(`<!DOCTYPE HTML><html><body><img src="https://image.freepik.com/free-vector/page-with-404-code-construction_89224-2833.jpg">
+			<div><a style="font-family: 'Segoe UI', sans-serif; font-size: 2em; color: #224;" href="https://www.gymburgdorf.ch">Zur Gymnasium Burgdorf Haupseite</a></div></div>	
+		</body></html>`)
+})
 app.use(async (err, req, res, next) => {
+	console.log(1111)
 	await new Promise(r=>setTimeout(r, 200))
 	if(err) {
 		logError(err)
@@ -60,6 +66,8 @@ app.use(async (err, req, res, next) => {
 			<div><a style="font-family: 'Segoe UI', sans-serif; font-size: 2em; color: #224;" href="https://www.gymburgdorf.ch">Zur Gymnasium Burgdorf Haupseite</a></div></div>	
 		</body></html>`)
 	}
+	console.log(123)
+	console.log(123)
 })
 //app.use("/", expressStaticGzip("./", staticOptions));
 
@@ -67,7 +75,7 @@ app.use(async (err, req, res, next) => {
 
 const PORT = 11300
 app.listen(PORT)
-console.log(`KB server running on ${11300}`)
+console.log(`KB server running on http://localhost:${11300}`)
 
 loadCalendarData()
 setInterval(loadCalendarData, 60*60*1000)
