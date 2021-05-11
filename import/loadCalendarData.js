@@ -44,7 +44,7 @@ async function loadCalendarData(SJ) {
 	let datehelpers = getDatehelpers(SJ)
 	let calendarData = {}
 	function addItem(yyyymmdd, item) {
-		if(item.summary.match(/Office hour/i)) return
+		if(!item.summary || item.summary.match(/Office hour/i)) return
 		calendarData[yyyymmdd] = calendarData[yyyymmdd] || []
 		calendarData[yyyymmdd].push(
 			(item.start.dateTime ? (item.start.dateTime.slice(11, 16) + " ") : "") + item.summary

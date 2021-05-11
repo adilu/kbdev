@@ -30,94 +30,133 @@ const SONDERSTUNDENPLAENE = [
 
 const EVENTS = [
 	{
-		Info: "Sonderprogramm Schulbeginn",
-		SW: 0,
-		Tag: MO,
-		Lektion: VORMITTAG,
-		Stufe: ALLESTUFEN,
-		TYP: AUSFALL
+		"Info": "Sonderprogramm Schulbeginn",
+		"SW": 0,
+		"Tag": "Mo",
+		"Lektion": [0,1,2,3,4,5],
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Tag der offenen Tür",
-		SW: 4,
-		Tag: MI,
-		Lektion: VORMITTAG,
-		Stufe: ALLESTUFEN,
-		Typ: INFO
+		"Info": "Ferienbeginn",
+		"SW": 5,
+		"Tag": "Fr",
+		"Lektion": "AB_L9",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Präsentation Schwerpunktfächer",
-		SW: 4,
-		Tag: MI,
-		Lektion: NACHMITTAG,
-		Stufe: ALLESTUFEN,
-		Typ: AUSFALL
+		"Info": "MA Präsentationen",
+		"SW": 14,
+		"Tag": "Fr",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Tag der offenen Tür",
-		SW: 4,
-		Tag: DO,
-		Lektion: GANZERTAG,
-		Stufe: ALLESTUFEN,
-		Typ: INFO
+		"Info": "Weihnachtsferien",
+		"SW": 16,
+		"Tag": "Do",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Ferienbeginn",
-		SW: 5,
-		Tag: FR,
-		Lektion: AB1545,
-		Stufe: ALLESTUFEN,
-		Typ: AUSFALL
+		"Info": "Weihnachtsferien",
+		"SW": 16,
+		"Tag": "Fr",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Fachwoche",
-		SW: 9,
-		Tag: GANZEWOCHE,
-		Lektion: GANZERTAG,
-		Stufe: ALLESTUFEN,
-		Typ: AUSFALL
+		"Info": "Klassenkonferenzen",
+		"SW": 19,
+		"Tag": "Mi",
+		"Lektion": "AB_L5",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "MA Präsentationen",
-		SW: 14,
-		Tag: FR,
-		Lektion: GANZERTAG,
-		Stufe: ALLESTUFEN,
-		Typ: AUSFALL
+		"Info": "Kollegiumshalbtag",
+		"SW": 26,
+		"Tag": "Mi",
+		"Lektion": "AB_L5",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Klassenkonferenzen",
-		SW: 19,
-		Tag: MI,
-		Lektion: [L3, L4, L5, L6, L7, L8 , L9, L10, L11],
-		Stufe: ALLESTUFEN,
-		Typ: AUSFALL
+		"Info": "Karfreitag",
+		"SW": 27,
+		"Tag": "Fr",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Mulus",
-		SW: 34,
-		Tag: DI,
-		Lektion: [L5, L6, L7],
-		Stufe: GYM4,
-		Typ: INFO
+		"Info": "Ostermontag",
+		"SW": 28,
+		"Tag": "Mo",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Ende GYM4",
-		SW: 34,
-		Tag: [MI, DO, FR],
-		Lektion: GANZERTAG,
-		Stufe: GYM4,
-		Typ: DELETE
+		"Info": "Auffahrt",
+		"SW": 31,
+		"Tag": "Do",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
 	{
-		Info: "Ende GYM4",
-		SW: [35, 36, 37, 38, 39, 40],
-		Tag: GANZEWOCHE,
-		Lektion: GANZERTAG,
-		Stufe: GYM4,
-		Typ: DELETE
+		"Info": "Auffahrtsbrücke",
+		"SW": 31,
+		"Tag": "Fr",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
 	},
+	{
+		"Info": "Pfingstmontag",
+		"SW": 33,
+		"Tag": "Mo",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
+	},
+	{
+		"Info": "ohne GYM4",
+		"SW": [32, 33, 34, 35, 36, 37, 38],
+		"Tag": "GANZE_WOCHE",
+		"Lektion": "GANZER_TAG",
+		"Stufe": 4,
+		"Typ": "AUSFALL"
+	},
+	{
+		"Info": "Solennität",
+		"SW": 38,
+		"Tag": "Mo",
+		"Lektion": "GANZER_TAG",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
+	},
+	{
+		"Info": "Klassenkonferenzen",
+		"SW": 38,
+		"Tag": "Mi",
+		"Lektion": "AB_L5",
+		"Stufe": "ALLE_STUFEN",
+		"Typ": "AUSFALL"
+	}
 ]
+//ev.
+//Vorbereitungssitzung Fachwoche,
+//Studierende berichten live,
+//Uni Bern Besuchstag, 
+//Fachschaftstag,
+//Kollegiumstag,
+//Ostern, Pfingsten
 
 /* ev.
 Vorbereitungssitzung Fachwoche,
